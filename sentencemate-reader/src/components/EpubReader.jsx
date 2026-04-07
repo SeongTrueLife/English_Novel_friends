@@ -5,9 +5,10 @@ import AskAIButton from './AskAIButton'
 import BottomSheet from './BottomSheet'
 import { useTextSelection } from '../hooks/useTextSelection'
 import { useGeminiAPI } from '../hooks/useGeminiAPI'
+import { addVocabItem, saveReadingProgress, getReadingProgress } from '../utils/storage'
 import '../styles/reader.css'
 
-function EpubReader({ epubData, bookTitle, settings, onBack, onOpenSettings }) {
+function EpubReader({ epubData, bookTitle, settings, onBack, onOpenSettings, onOpenVocab }) {
   const viewerRef = useRef(null)
   const bookRef = useRef(null)
   const renditionRef = useRef(null)
@@ -18,6 +19,7 @@ function EpubReader({ epubData, bookTitle, settings, onBack, onOpenSettings }) {
   const [isReady, setIsReady] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [sheetSelectedText, setSheetSelectedText] = useState('')
+  const [currentChapter, setCurrentChapter] = useState('')
 
   const {
     selectedText,
@@ -46,7 +48,9 @@ function EpubReader({ epubData, bookTitle, settings, onBack, onOpenSettings }) {
 
     renditionRef.current = r
 
-    r.display().then(() => {
+    // 저장된 읽기 위치가 있으면 해당 위치로, 없으면 처음부터
+    const savedCfi = getReadingProgress(bookTitle)
+    r.display(savedCfi || undefined).then(() => {
       setRendition(r)
       setIsReady(true)
     })
@@ -56,7 +60,36 @@ function EpubReader({ epubData, bookTitle, settings, onBack, onOpenSettings }) {
         setCurrentPage(location.start.displayed.page)
         setTotalPages(location.start.displayed.total)
       }
+      // 읽은 위치 저장
+      try {
+        const cfi = location?.start?.cfi
+        if (cfi) saveReadingProgress(bookTitle, cfi)
+      } catch (e) { /* 무시 */ }
+      // 현재 챕터명 업데이트
+      try {
+        const href = location?.start?.href
+        if (href && book.navigation) {
+          const tocItem = book.navigation.toc.find(t =>
+            href.includes(t.href.split('#')[0])
+          )
+          if (tocItem) setCurrentChapter(tocItem.label?.trim() || '')
+        }
+      } catch (e) { /* 무시 */ }
       clearSelection()
+
+      // paginated 모드에서 scrollLeft가 페이지 경계에서 어긋난 경우 보정
+      try {
+        const manager = r.manager
+        const container = manager?.container
+        const delta = manager?.layout?.delta
+        if (container && delta) {
+          const current = container.scrollLeft
+          const snapped = Math.round(current / delta) * delta
+          if (Math.abs(current - snapped) > 1) {
+            container.scrollLeft = snapped
+          }
+        }
+      } catch (e) { /* 무시 */ }
     })
 
     return () => {
@@ -124,13 +157,11 @@ function EpubReader({ epubData, bookTitle, settings, onBack, onOpenSettings }) {
     setIsSheetOpen(true)
     callAPI({ selectedText, beforeSentence, afterSentence })
 
-    // 스크롤 자동 조정: 선택 문장이 바텀시트에 가려지면 스크롤
-    const sheetTop = window.innerHeight * 0.55
-    if (selectionRect && selectionRect.bottom > sheetTop) {
-      try {
-        selectedElementRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-      } catch (e) { /* paginated 모드에서는 무시 */ }
-    }
+    // paginated 모드에서는 scrollIntoView가 scrollLeft를 어긋나게 하므로 사용하지 않음
+  }
+
+  function handleAddVocab(word, explanation) {
+    addVocabItem({ word, explanation, bookTitle, chapter: currentChapter })
   }
 
   function handleCloseSheet() {
@@ -157,6 +188,7 @@ function EpubReader({ epubData, bookTitle, settings, onBack, onOpenSettings }) {
         bookTitle={bookTitle}
         onBack={onBack}
         onOpenSettings={onOpenSettings}
+        onOpenVocab={onOpenVocab}
       />
 
       <div className="reader-body">
@@ -190,6 +222,7 @@ function EpubReader({ epubData, bookTitle, settings, onBack, onOpenSettings }) {
         streamingText={streamingText}
         isLoading={isLoading}
         error={error}
+        onAddVocab={handleAddVocab}
       />
     </div>
   )

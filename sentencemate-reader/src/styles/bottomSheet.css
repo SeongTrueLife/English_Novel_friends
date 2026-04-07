@@ -245,3 +245,54 @@
   text-align: center;
   line-height: 1.6;
 }
+
+/* --- 단어장 추가 플로팅 버튼 (바텀시트 상단 고정) --- */
+.vocab-add-float-btn {
+  position: fixed;
+  top: calc(var(--toolbar-height) + 8px);
+  left: 16px;
+  z-index: 100;
+  height: 38px;
+  padding: 0 16px;
+  background: #34a853;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  border-radius: 999px;
+  box-shadow: 0 3px 12px rgba(52, 168, 83, 0.45);
+  white-space: nowrap;
+  animation: vocabBtnPop 0.15s ease-out;
+}
+
+.vocab-add-float-btn:hover {
+  background: #2d9249;
+  box-shadow: 0 4px 16px rgba(52, 168, 83, 0.55);
+}
+
+@keyframes vocabBtnPop {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* 단어장 추가 토스트 */
+.vocab-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 14px;
+  font-family: var(--font-ui);
+  border-radius: 999px;
+  z-index: 200;
+  animation: toastFade 2s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes toastFade {
+  0%, 70% { opacity: 1; }
+  100%    { opacity: 0; }
+}

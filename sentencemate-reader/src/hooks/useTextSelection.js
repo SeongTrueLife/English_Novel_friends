@@ -5,6 +5,25 @@ import { extractContext } from '../utils/sentenceExtractor'
  * epub.js rendition의 텍스트 선택을 감지하고 앞뒤 문장을 추출하는 훅
  * @param {object|null} rendition - epub.js rendition 객체
  */
+/**
+ * paginated 모드에서 브라우저 자동 스크롤로 어긋난 scrollLeft를
+ * 가장 가까운 페이지 경계(delta 배수)로 스냅한다.
+ */
+function snapScrollPosition(rendition) {
+  try {
+    const manager = rendition?.manager
+    if (!manager) return
+    const container = manager.container
+    const delta = manager.layout?.delta
+    if (!container || !delta) return
+    const current = container.scrollLeft
+    const snapped = Math.round(current / delta) * delta
+    if (Math.abs(current - snapped) > 1) {
+      container.scrollLeft = snapped
+    }
+  } catch (e) { /* iframe 접근 실패 시 무시 */ }
+}
+
 export function useTextSelection(rendition) {
   const [selectedText, setSelectedText] = useState('')
   const [beforeSentence, setBeforeSentence] = useState('')
@@ -75,6 +94,9 @@ export function useTextSelection(rendition) {
         setBeforeSentence(before)
         setAfterSentence(after)
         setSelectionRect(viewportRect)
+
+        // 텍스트 선택 중 브라우저가 scrollLeft를 어긋나게 만든 경우 보정
+        snapScrollPosition(rendition)
       } catch (e) {
         clearSelection()
       }

@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import '../styles/components.css'
 
-function FileUploader({ onFileLoaded, onOpenSettings }) {
+function FileUploader({ onFileLoaded, onOpenSettings, onOpenVocab }) {
   const [isDragging, setIsDragging] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -87,9 +87,14 @@ function FileUploader({ onFileLoaded, onOpenSettings }) {
 
       {error && <p className="uploader-error">{error}</p>}
 
-      <button className="uploader-settings-btn" onClick={onOpenSettings}>
-        ⚙ 설정
-      </button>
+      <div className="uploader-bottom-btns">
+        <button className="uploader-settings-btn" onClick={onOpenVocab}>
+          단어장
+        </button>
+        <button className="uploader-settings-btn" onClick={onOpenSettings}>
+          설정
+        </button>
+      </div>
     </div>
   )
 }

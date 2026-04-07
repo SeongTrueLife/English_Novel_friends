@@ -6,7 +6,7 @@ const MIN_HEIGHT_RATIO = 0.45
 const MAX_HEIGHT_RATIO = 0.85
 const CLOSE_THRESHOLD = 80 // 이 픽셀 이상 내리면 닫힘
 
-function BottomSheet({ isOpen, onClose, selectedText, streamingText, isLoading, error }) {
+function BottomSheet({ isOpen, onClose, selectedText, streamingText, isLoading, error, onAddVocab }) {
   const [sheetHeight, setSheetHeight] = useState(() => window.innerHeight * MIN_HEIGHT_RATIO)
   const [isVisible, setIsVisible] = useState(false)
 
@@ -100,6 +100,7 @@ function BottomSheet({ isOpen, onClose, selectedText, streamingText, isLoading, 
             streamingText={streamingText}
             isLoading={isLoading}
             error={error}
+            onAddVocab={onAddVocab}
           />
         </div>
       </div>

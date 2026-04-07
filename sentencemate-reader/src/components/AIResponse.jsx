@@ -106,8 +106,70 @@ function StageSection({ header, body, defaultOpen, isStreaming }) {
   )
 }
 
-function AIResponse({ selectedText, streamingText, isLoading, error }) {
+function AIResponse({ selectedText, streamingText, isLoading, error, onAddVocab }) {
   const stages = useMemo(() => parseStages(streamingText), [streamingText])
+  const [vocabToast, setVocabToast] = useState('')
+  const [vocabBtnVisible, setVocabBtnVisible] = useState(false)
+  const vocabSelectedRef = useRef('')
+
+  // document 레벨에서 텍스트 선택 감지 (ref 타이밍 문제 회피)
+  useEffect(() => {
+    if (!onAddVocab) return
+
+    function handleSelectionCheck(e) {
+      console.log('[VOCAB DEBUG] event fired:', e.type)
+      setTimeout(() => {
+        const sel = window.getSelection()
+        const text = sel?.toString().trim()
+        console.log('[VOCAB DEBUG] selected text:', JSON.stringify(text), 'length:', text?.length)
+        if (!text || text.length < 2) {
+          console.log('[VOCAB DEBUG] BAIL: text too short or empty')
+          setVocabBtnVisible(false)
+          return
+        }
+        const anchor = sel.anchorNode
+        const parentEl = anchor?.parentElement
+        console.log('[VOCAB DEBUG] anchorNode type:', anchor?.nodeType, 'parentElement:', parentEl?.tagName, parentEl?.className)
+        const responseEl = parentEl?.closest('.ai-response')
+        console.log('[VOCAB DEBUG] closest .ai-response:', responseEl ? 'FOUND' : 'NOT FOUND')
+        if (!responseEl) {
+          setVocabBtnVisible(false)
+          return
+        }
+        vocabSelectedRef.current = text
+        console.log('[VOCAB DEBUG] >>> SHOWING BUTTON')
+        setVocabBtnVisible(true)
+      }, 50)
+    }
+
+    function handleMouseDown(e) {
+      if (e.target.closest?.('.vocab-add-float-btn')) return
+      setVocabBtnVisible(false)
+    }
+
+    document.addEventListener('mouseup', handleSelectionCheck)
+    document.addEventListener('touchend', handleSelectionCheck)
+    document.addEventListener('mousedown', handleMouseDown)
+    document.addEventListener('touchstart', handleMouseDown, { passive: true })
+    console.log('[VOCAB DEBUG] listeners registered on document')
+
+    return () => {
+      document.removeEventListener('mouseup', handleSelectionCheck)
+      document.removeEventListener('touchend', handleSelectionCheck)
+      document.removeEventListener('mousedown', handleMouseDown)
+      document.removeEventListener('touchstart', handleMouseDown)
+    }
+  }, [onAddVocab])
+
+  function handleVocabClick() {
+    const text = vocabSelectedRef.current
+    if (!text || !onAddVocab) return
+    onAddVocab(selectedText, text)
+    setVocabBtnVisible(false)
+    setVocabToast('단어장에 추가되었습니다!')
+    setTimeout(() => setVocabToast(''), 2000)
+    window.getSelection()?.removeAllRanges()
+  }
 
   if (error) {
     return <div className="ai-error">{error}</div>
@@ -143,6 +205,19 @@ function AIResponse({ selectedText, streamingText, isLoading, error }) {
           isStreaming={isLoading && i === stages.length - 1}
         />
       ))}
+
+      {vocabBtnVisible && (
+        <button
+          className="vocab-add-float-btn"
+          onMouseDown={(e) => { e.preventDefault(); e.stopPropagation() }}
+          onTouchStart={(e) => { e.stopPropagation() }}
+          onClick={handleVocabClick}
+        >
+          + 단어장에 추가
+        </button>
+      )}
+
+      {vocabToast && <div className="vocab-toast">{vocabToast}</div>}
     </div>
   )
 }

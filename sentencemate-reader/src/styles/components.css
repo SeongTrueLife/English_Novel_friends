@@ -189,9 +189,14 @@
   box-shadow: 0 4px 16px rgba(74, 144, 217, 0.55);
 }
 
-/* --- 업로더 설정 버튼 --- */
-.uploader-settings-btn {
+/* --- 업로더 하단 버튼 --- */
+.uploader-bottom-btns {
+  display: flex;
+  gap: 12px;
   margin-top: 8px;
+}
+
+.uploader-settings-btn {
   padding: 8px 16px;
   font-size: 13px;
   color: var(--text-muted);
