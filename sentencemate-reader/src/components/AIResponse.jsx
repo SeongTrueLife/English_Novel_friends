@@ -116,30 +116,26 @@ function AIResponse({ selectedText, streamingText, isLoading, error, onAddVocab 
   useEffect(() => {
     if (!onAddVocab) return
 
-    function handleSelectionCheck(e) {
-      console.log('[VOCAB DEBUG] event fired:', e.type)
-      setTimeout(() => {
+    let selectionTimer = null
+
+    function handleSelectionChange() {
+      clearTimeout(selectionTimer)
+      selectionTimer = setTimeout(() => {
         const sel = window.getSelection()
         const text = sel?.toString().trim()
-        console.log('[VOCAB DEBUG] selected text:', JSON.stringify(text), 'length:', text?.length)
         if (!text || text.length < 2) {
-          console.log('[VOCAB DEBUG] BAIL: text too short or empty')
           setVocabBtnVisible(false)
           return
         }
-        const anchor = sel.anchorNode
-        const parentEl = anchor?.parentElement
-        console.log('[VOCAB DEBUG] anchorNode type:', anchor?.nodeType, 'parentElement:', parentEl?.tagName, parentEl?.className)
-        const responseEl = parentEl?.closest('.ai-response')
-        console.log('[VOCAB DEBUG] closest .ai-response:', responseEl ? 'FOUND' : 'NOT FOUND')
+        const anchor = sel.anchorNode?.parentElement
+        const responseEl = anchor?.closest('.ai-response')
         if (!responseEl) {
           setVocabBtnVisible(false)
           return
         }
         vocabSelectedRef.current = text
-        console.log('[VOCAB DEBUG] >>> SHOWING BUTTON')
         setVocabBtnVisible(true)
-      }, 50)
+      }, 200)
     }
 
     function handleMouseDown(e) {
@@ -147,15 +143,13 @@ function AIResponse({ selectedText, streamingText, isLoading, error, onAddVocab 
       setVocabBtnVisible(false)
     }
 
-    document.addEventListener('mouseup', handleSelectionCheck)
-    document.addEventListener('touchend', handleSelectionCheck)
+    document.addEventListener('selectionchange', handleSelectionChange)
     document.addEventListener('mousedown', handleMouseDown)
     document.addEventListener('touchstart', handleMouseDown, { passive: true })
-    console.log('[VOCAB DEBUG] listeners registered on document')
 
     return () => {
-      document.removeEventListener('mouseup', handleSelectionCheck)
-      document.removeEventListener('touchend', handleSelectionCheck)
+      clearTimeout(selectionTimer)
+      document.removeEventListener('selectionchange', handleSelectionChange)
       document.removeEventListener('mousedown', handleMouseDown)
       document.removeEventListener('touchstart', handleMouseDown)
     }
