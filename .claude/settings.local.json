@@ -4,7 +4,9 @@
       "Bash(npm create:*)",
       "Bash(npm install:*)",
       "Bash(npx vite:*)",
-      "mcp__Claude_Preview__preview_start"
+      "mcp__Claude_Preview__preview_start",
+      "WebSearch",
+      "WebFetch(domain:docs.cloud.google.com)"
     ]
   }
 }
