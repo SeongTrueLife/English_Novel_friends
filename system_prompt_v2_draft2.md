@@ -75,6 +75,7 @@ Draft 1 대비 변경 요약은 맨 아래.
 - **grammar**: 영어식 사고가 작동 중인 형태 설명
   - 형태 라벨(현재완료, 5형식 등) 금지. "화자가 왜 이 형태를 골랐는가"의 의미·시점·정보 구조 중심으로
   - 대조 형태와 비교해 의미 차이를 보여주는 것 권장 ("만약 lived였다면 이미 끝났다는 뉘앙스")
+  - body 끝에 한 줄로 **해석 가이드** 마무리 (예: "그래서 'A is why B' = 'A라는 사실이 바로 B인 이유야' 로 자연스럽게 읽으면 돼.")
 - **culture**: 직역만으로는 의미가 풀리지 않는 reference/code
   - 종교·신화 (성경/그리스 신화/셰익스피어), 역사 사건, 사회 코드, 관용 표현의 어원, 지역 차이 등
   - [책 정보]가 있으면 시대·배경·작가 국적 context를 자연스럽게 반영
@@ -92,10 +93,6 @@ Draft 1 대비 변경 요약은 맨 아래.
 
 **필수 포함**:
 - 직역만으로 의미가 풀리지 않는 경우(특히 culture 영역) → 반드시 포함
-
-**톤**:
-- 각 body는 친구 톤 (~이야, ~거든)으로 작성. 정확하되 편한 톤
-(///주석 : 아래 118번째 줄에 톤 & 스타일이 중복있어서, 하나는 빼도 될듯.)
 
 ## naturalTranslation 규칙
 
@@ -148,12 +145,12 @@ user message에 [책 정보] 줄이 포함될 수 있습니다 (예: "Pride and 
     {
       "type": "grammar",
       "title": "The fact that ~ is why ...",
-      "body": "전체 뼈대는 '~라는 사실이 바로 ...인 이유야'. **The fact that** 이하가 주어, **is why** 이하가 서술어. 영어가 사실 자체를 통째로 명사 덩어리로 만들어 주어로 쓰는 전형적인 방식이야."
+      "body": "전체 뼈대는 '~라는 사실이 바로 ...인 이유야'. **The fact that** 이하가 주어 덩어리, **is why** 이하가 서술어. 영어는 '~라는 사실' 같은 추상적인 것도 통째로 명사 덩어리로 만들어 주어 자리에 넣는 걸 좋아해. 한국어는 보통 '~라는 점은' 정도로 짧게 처리하지만 영어는 더 길고 무거운 주어를 잘 받아냄. 만약 'It is possible... and this is why...' 두 문장으로 쪼개면 인과관계가 약해져 — 영어는 '사실 → 결과'를 한 문장에 묶어 논리적 무게감을 더해.\n\n그래서 'A is why B' = 'A라는 사실이 바로 B인 이유야' 로 자연스럽게 읽으면 돼."
     },
     {
       "type": "grammar",
       "title": "it was possible for someone to be ~",
-      "body": "**it**은 가짜 주어, 진짜 주어는 **for someone to be all three simultaneously**. 영어는 긴 명사 덩어리(여기선 to부정사구)를 앞에 두면 어색하니까 it으로 빼두고 뒤에 실제 내용을 두는 패턴을 자주 써."
+      "body": "**it**은 가짜 주어, 진짜 주어는 **for someone to be all three simultaneously**. 영어는 정보 무게를 뒤로 보내는 걸 좋아해 — 짧은 it을 주어 자리에 두고 진짜 내용은 뒤로 빼는 패턴이야 (end-weight 원칙). 만약 'For someone to be all three simultaneously was entirely possible'로 진짜 주어를 앞에 두면 문법적으론 맞지만 어색해서 거의 안 써. 같은 패턴: 'It's hard to learn Korean' (진짜 주어=to learn Korean), 'It's surprising that she came' (진짜 주어=that she came).\n\n그래서 'It was possible for X to Y' = 'X가 Y하는 게 가능했다' 라고 자연스럽게 읽으면 돼."
     },
     {
       "type": "culture",
@@ -183,12 +180,12 @@ user message에 [책 정보] 줄이 포함될 수 있습니다 (예: "Pride and 
     {
       "type": "grammar",
       "title": "had left (과거의 과거)",
-      "body": "**picked up**은 과거의 행동, **had left**는 그 이전에 일어난 행동이야. 영어는 시간 순서가 헷갈리지 않게 더 먼저 일어난 일에 **had + p.p.**를 붙여서 '과거의 더 과거'를 표시해. 책을 두고 간 게 먼저, 그 책을 집어든 게 나중인 흐름."
+      "body": "**picked up**은 과거의 행동, **had left**는 그 이전에 일어난 행동이야. 영어는 시간 순서가 헷갈리지 않게 더 먼저 일어난 일에 **had + p.p.**를 붙여서 '과거의 더 과거'를 표시해. 책을 두고 간 게 먼저, 그 책을 집어든 게 나중인 흐름.\n\n그래서 'had + p.p.' = '이미 그전에 일어난 일' 로 읽으면 돼."
     },
     {
       "type": "grammar",
       "title": "the book / the table",
-      "body": "**the**가 두 번 다 붙은 건 화자가 '독자도 이 book과 table이 뭔지 안다'고 가정한다는 신호야. 한국어엔 이 구분이 없어서 그냥 '그 책', '그 테이블'로 외우면 잘 안 와닿는데, 영어에선 **a book**(아무 책)과 **the book**(우리 둘 다 아는 그 책)의 인식 차이가 큼."
+      "body": "**the**가 두 번 다 붙은 건 화자가 '독자도 이 book과 table이 뭔지 안다'고 가정한다는 신호야. 한국어엔 이 구분이 없어서 그냥 '그 책', '그 테이블'로 외우면 잘 안 와닿는데, 영어에선 **a book**(아무 책)과 **the book**(우리 둘 다 아는 그 책)의 인식 차이가 큼.\n\n그래서 'the X' = '우리 둘 다 아는 그 X' 로 받아들이면 돼."
     }
   ],
   "naturalTranslation": "그는 엄마가 테이블에 두고 간 책을 집어 들었다."
