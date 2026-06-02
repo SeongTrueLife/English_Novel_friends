@@ -66,8 +66,6 @@ v2(`system_prompt_v2_draft2.md`, `system_prompt_v2_final_en.md`) 대비 **응답
   "naturalTranslation": "자연스러운 한국어 해석"
 }
 
-example_sentence(책 원문 문장)는 응답에 포함하지 않습니다 — 클라이언트가 [Selected] 문장을 카드 저장 시 자동 첨부합니다.
-
 ## vocab 작성 규칙
 
 **vocab 항목 1개 = 단어장에 저장될 단어 카드 1장.**
@@ -336,16 +334,16 @@ generationConfig: {
 
 ## v2 (draft2) → v3 변경 요약
 
-| # | 변경 |
-|---|---|
-| 1 | thinking 평면 배열 → **학습 단위(vocab/grammar) 중심**으로 재편 |
-| 2 | vocab 항목 안에 thinking 자식 배열 추가 — 그 단어에 종속된 인지·문화·작가 의도 |
-| 3 | grammar를 thinking type에서 빼서 **별도 학습 단위(grammar 배열)** 로 승격. `pattern + explanation + interpretation_guide` 3 필드 |
-| 4 | sentence_thinking 별도 배열 신설 — 문장 차원 culture/author_intent (드물게 사용) |
-| 5 | vocab.thinking type enum: `core_image / culture / author_intent` (grammar 빠짐) |
-| 6 | sentence_thinking type enum: `culture / author_intent` (core_image는 항상 단어에 종속되어 여기 없음) |
-| 7 | example_sentence는 응답에 포함하지 않음 — 클라이언트가 [선택 문장] 자동 첨부 |
-| 8 | Few-shot 예시 2개 새 구조로 재작성 (good-Samaritanism, He picked up the book...) |
+| #   | 변경                                                                                                                             |
+| --- | -------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | thinking 평면 배열 → **학습 단위(vocab/grammar) 중심**으로 재편                                                                  |
+| 2   | vocab 항목 안에 thinking 자식 배열 추가 — 그 단어에 종속된 인지·문화·작가 의도                                                   |
+| 3   | grammar를 thinking type에서 빼서 **별도 학습 단위(grammar 배열)** 로 승격. `pattern + explanation + interpretation_guide` 3 필드 |
+| 4   | sentence_thinking 별도 배열 신설 — 문장 차원 culture/author_intent (드물게 사용)                                                 |
+| 5   | vocab.thinking type enum: `core_image / culture / author_intent` (grammar 빠짐)                                                  |
+| 6   | sentence_thinking type enum: `culture / author_intent` (core_image는 항상 단어에 종속되어 여기 없음)                             |
+| 7   | example_sentence는 응답에 포함하지 않음 — 클라이언트가 [선택 문장] 자동 첨부                                                     |
+| 8   | Few-shot 예시 2개 새 구조로 재작성 (good-Samaritanism, He picked up the book...)                                                 |
 
 ---
 
