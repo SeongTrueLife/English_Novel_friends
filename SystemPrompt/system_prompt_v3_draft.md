@@ -1,7 +1,7 @@
 # System Prompt v3 — Draft (Korean)
 
 작성: 2026-06-01
-관련 문서: [plan_v2_26_05_24.md](plan_v2_26_05_24.md) (v2 전반), [db/db_schema_v2.md](db/db_schema_v2.md) (DB 설계 — 새 구조 반영 예정)
+관련 문서: [plan_v2_26_05_24.md](../plan/plan_v2_26_05_24.md) (v2 전반), [db_schema_v2.md](../db/db_schema_v2.md) (DB 설계 — 새 구조 반영 예정)
 
 v2(`system_prompt_v2_draft2.md`, `system_prompt_v2_final_en.md`) 대비 **응답 구조 자체가 학습 단위 중심으로 재편**됨. 변경 요약은 맨 아래.
 

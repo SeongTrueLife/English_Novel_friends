@@ -272,24 +272,24 @@ generationConfig: {
 
 이 Draft 2를 실제 동작시키려면 같이 손봐야 하는 코드:
 
-### 1. [useTextSelection.js](sentencemate-reader/src/hooks/useTextSelection.js) — 맥락 문장 1개→2개씩
+### 1. [useTextSelection.js](../sentencemate-reader/src/hooks/useTextSelection.js) — 맥락 문장 1개→2개씩
 
 - 현재: `beforeSentence`, `afterSentence` 각 1개 추출
 - 변경: `beforeSentences: [s1, s2]`, `afterSentences: [s1, s2]` 배열로 추출
 
-### 2. [systemPrompt.js](sentencemate-reader/src/utils/systemPrompt.js) — buildUserMessage 재작성
+### 2. [systemPrompt.js](../sentencemate-reader/src/utils/systemPrompt.js) — buildUserMessage 재작성
 
 - 앞/뒤 문장 배열 처리
 - `[책 정보] {title} — {author}` 슬롯 추가
 - `[사용자 추가 요청] ...` 슬롯 추가 (사용자 입력 시에만)
 
-### 3. [useGeminiAPI.js](sentencemate-reader/src/hooks/useGeminiAPI.js) — Structured Output 모드
+### 3. [useGeminiAPI.js](../sentencemate-reader/src/hooks/useGeminiAPI.js) — Structured Output 모드
 
 - `responseMimeType: "application/json"` + 위 `responseSchema` 추가
 - 스트리밍 → 단발 응답 (`alt=sse` 제거, 일반 POST). 응답이 다 모이면 JSON.parse
 - multi-turn 지원 (follow-up 채팅형 누적 위해 `contents` 배열에 이전 turn 누적)
 
-### 4. [AIResponse.jsx](sentencemate-reader/src/components/AIResponse.jsx) — 응답 렌더링 새 구조
+### 4. [AIResponse.jsx](../sentencemate-reader/src/components/AIResponse.jsx) — 응답 렌더링 새 구조
 
 - 기존 `parseStages` 제거
 - JSON 응답 → `{vocab, thinking, naturalTranslation}` 구조로 컴포넌트 분기:

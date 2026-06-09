@@ -1,10 +1,11 @@
 # DB Schema v2 — SentenceMate Reader
 
 작성: 2026-06-01 (시스템 프롬프트 v3 + 컬럼 설계 반영)
+최종 업데이트: 2026-06-09 (검토 반영: last_reviewed_at·updated_at 추가, 데이터 생명주기 명문화, 인덱스 주석 정정, 중복 카드 정책 보류 명시)
 관련 문서:
 
-- [../plan_v2_26_05_24.md](../plan_v2_26_05_24.md) — v2 전반 결정사항
-- [../system_prompt_v3_draft.md](../system_prompt_v3_draft.md) — AI 응답 구조 v3 (이 스키마의 출발점)
+- [../plan/plan_v2_26_05_24.md](../plan/plan_v2_26_05_24.md) — v2 전반 결정사항
+- [../SystemPrompt/system_prompt_v3_draft.md](../SystemPrompt/system_prompt_v3_draft.md) — AI 응답 구조 v3 (이 스키마의 출발점)
 - [db_learning_notes.md](db_learning_notes.md) — DB 개념 일반론
 
 > **사용자 메모**: plan_v2와의 합치기는 사용자가 직접 처리 예정. 이 파일은 그 전까지 독립적으로 유지. 파일 하단의 "plan_v2와의 관계" 표가 합치기 가이드.
@@ -88,10 +89,12 @@
        │          │     example_sent │           │                    │
        │          │     chapter      │           │                    │
        │          │     review_count │           │                    │
+       │          │     last_reviewed│           │                    │
        │          │     next_review  │           │                    │
        │          │     ease_factor  │           │                    │
        │          │     interval_days│           │                    │
        │          │     created_at   │           │                    │
+       │          │     updated_at   │           │                    │
        │          └──────────────────┘           │                    │
        │                   │                     │                    │
        │ 1                 │ N                   │ 1                  │ 1
@@ -238,6 +241,24 @@ v3 단계에서 결정할 자리.
 
 heartbeat 없이도 95% 케이스 정확히 잡힘. 인프라 단순.
 
+### 7. cards/sentences 데이터 생명주기 — 책 라이브러리 제거 시 보존
+
+cards / sentences / reading_sessions는 user_books가 아니라 **books를 직접 참조**한다. 따라서 사용자가 "라이브러리에서 책 빼기"(user_books 행 DELETE)를 해도, 그 책에서 만든 학습 데이터(단어/문법 카드, 문장)는 **그대로 보존된다.**
+
+**근거**:
+
+- 카드 한 장 한 장이 LLM 호출 비용을 들여 만든 결과물 — 책을 안 읽는다고 버리면 비용 손실
+- 사용자가 책을 잠시 라이브러리에서 내려도 단어장 학습은 계속 가능
+
+**의도된 동작이며 버그가 아님** (미래의 "고아 데이터 아닌가?" 오해 방지용 명시).
+
+CASCADE가 실제로 도는 경우는 두 가지뿐:
+
+- **사용자 계정 삭제** → auth.users 삭제 → 그 사용자의 모든 cards/sentences/reading_sessions/user_books가 CASCADE 삭제
+- **개별 카드 삭제** → cards는 leaf 테이블(아무도 cards를 FK로 참조 안 함)이라 한 행만 깔끔하게 삭제 (RLS `cards_delete_own`로 본인만 가능)
+
+향후 사용자 증가로 보관 비용이 문제되면 정책 재검토 (예: 라이브러리 제거 시 옵션으로 "단어장도 삭제" 제공).
+
 ---
 
 ## 컬럼 SQL (v2 확정)
@@ -265,6 +286,7 @@ CREATE TABLE public.user_books (
   progress_pct numeric(4,1) CHECK (progress_pct BETWEEN 0 AND 100),
   added_at timestamptz NOT NULL DEFAULT now(),
   last_opened_at timestamptz,
+  updated_at timestamptz NOT NULL DEFAULT now(),   -- 트리거로 자동 갱신 (아래 참조)
   PRIMARY KEY (user_id, book_id)
 );
 
@@ -293,11 +315,13 @@ CREATE TABLE public.cards (
 
   -- SRS (word + grammar 둘 다 복습 대상)
   review_count integer NOT NULL DEFAULT 0,
+  last_reviewed_at timestamptz,        -- 미복습 카드는 NULL (NULL = '해당 없음')
   next_review_at timestamptz,
   ease_factor numeric(3,2) NOT NULL DEFAULT 2.5,
   interval_days integer NOT NULL DEFAULT 0,
 
   created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),   -- 트리거로 자동 갱신 (아래 참조)
 
   -- kind별 컬럼 강제 (도메인 무결성)
   CHECK (
@@ -332,7 +356,8 @@ CREATE TABLE public.sentences (
   sentence text NOT NULL,
   note text,
   chapter text,
-  created_at timestamptz NOT NULL DEFAULT now()
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()    -- 트리거로 자동 갱신 (아래 참조)
 );
 
 -- ============================================
@@ -353,6 +378,27 @@ CREATE TABLE public.reading_sessions (
   CHECK (ended_at IS NULL OR ended_at >= started_at),
   CHECK (last_activity_at >= started_at)
 );
+-- 참고: reading_sessions는 updated_at 대신 last_activity_at이 '마지막 변경' 의미를 담당하므로 제외
+
+-- ============================================
+-- updated_at 자동 갱신 트리거
+-- (Supabase 기본 제공 moddatetime 익스텐션 사용)
+-- ============================================
+-- 행 UPDATE 시 updated_at을 now()로 자동 갱신.
+-- 클라이언트가 매번 updated_at을 직접 넣지 않아도 DB가 보장 → 단말기 간 sync 충돌 해결의 기준 시각.
+CREATE EXTENSION IF NOT EXISTS moddatetime SCHEMA extensions;
+
+CREATE TRIGGER cards_set_updated_at
+  BEFORE UPDATE ON public.cards
+  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
+
+CREATE TRIGGER sentences_set_updated_at
+  BEFORE UPDATE ON public.sentences
+  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
+
+CREATE TRIGGER user_books_set_updated_at
+  BEFORE UPDATE ON public.user_books
+  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
 ```
 
 ---
@@ -381,7 +427,10 @@ CREATE INDEX user_books_user_last_opened_idx
 -- cards
 -- ============================================
 -- 단어장 화면: 사용자의 카드 목록 (책별 필터 옵션, 최신순)
--- left-prefix 원칙으로 "사용자의 전체 카드" 쿼리도 이 인덱스 활용
+-- 책별 필터 쿼리(WHERE user_id=? AND book_id=? ORDER BY created_at DESC)는 필터+정렬 완전 커버.
+-- 단, 전체 탭(WHERE user_id=? ORDER BY created_at DESC, 책 필터 없음)은 user_id 필터엔 쓰이지만
+-- book_id가 정렬 키 앞에 껴 있어 created_at 정렬은 별도 sort 발생 (left-prefix 한계).
+-- 전체 탭 최신순이 실제로 느려지면 (user_id, created_at DESC) 인덱스 추가 검토.
 CREATE INDEX cards_user_book_created_idx
   ON public.cards (user_id, book_id, created_at DESC);
 
@@ -714,13 +763,14 @@ for (const book of curatedBooks) {
 - [x] ~~각 테이블 컬럼 설계~~ — **위 SQL로 확정** (타입·NULL·기본값·CHECK 제약 포함)
 - [x] ~~인덱스 설계~~ — **6개 인덱스 + 부분 인덱스 2개로 확정** (위 SQL 섹션)
 - [x] ~~RLS 정책~~ — **5개 테이블 정책 + service_role admin 모델로 확정** (위 RLS 섹션)
-- [ ] **FK CASCADE 정책 검증** — 사용자 삭제 시 cards·user_books·sentences·reading_sessions 같이 삭제 (✅ 적용됨). books는 글로벌이라 사용자가 삭제 못 함 (RLS로 강제)
+- [x] ~~**FK CASCADE 정책 검증**~~ — 사용자 삭제 시 cards·user_books·sentences·reading_sessions 같이 삭제 (✅ 적용됨). books는 글로벌이라 사용자가 삭제 못 함 (RLS로 강제). **라이브러리에서 책 제거(user_books 삭제) 시 cards/sentences는 보존** (결정 7 참조)
 - [x] ~~저작권 free 책 시드 데이터 인프라~~ — **방법 B (운영 스크립트 + service_role) 확정** (위 섹션)
 - [ ] **시드 데이터 큐레이션 운영** (v2 UI 단계) — 실제 50권 선별, 난이도 분류, 장르 균형
 - [ ] **사용자 노출 UX** (v2 UI 단계) — 자동 추가 / 정적 카탈로그 / AI 추천 시스템 등 큰 방향 결정
 - [ ] **books 테이블 추가 컬럼** (UX 방향 결정 후) — difficulty/year/description/cover_url/genre/embedding 등
 - [ ] **sentence_thinking 저장 정책** — v3 sentence 카드 UI 활성화 시 sentences.note에 흡수 또는 별도 컬럼 (현재는 미정)
 - [ ] **클라이언트 last_activity_at 갱신 정책** — 어떤 사용자 활동을 트리거로 잡을지 (페이지 넘김, 카드 추가, 단어 선택, 스크롤 등)
+- [ ] **중복 카드 허용/차단 정책** — 같은 단어를 여러 번 저장 허용할지 실사용 후 결정 (같은 단어라도 다른 문장에선 다른 의미일 수 있어 무작정 차단은 부적절). 실수 더블클릭은 클라이언트 debounce/버튼 비활성화로 처리(스키마 무관). 진짜 중복 차단이 필요해지면 partial UNIQUE 인덱스 검토.
 
 ---
 
@@ -733,7 +783,7 @@ for (const book of curatedBooks) {
 | A. 응답 구조                         | (system_prompt_v3로 이관됨)               | thinking 평면 배열 → 학습 단위 중심 재편                                        |
 | B. 출력 형식 JSON                    | (system_prompt_v3로 이관됨)               | vocab/grammar/sentence_thinking 3 배열                                          |
 | D. 단어장 kind 통합 모델             | "엔티티 목록 > cards, sentences" + 결정 3 | v3 응답 구조에 맞춰 word/grammar는 cards 통합, sentence는 별도                  |
-| D'. 학습자료 범위 (B 책 단위, C SRS) | "엔티티 목록 > reading_sessions, cards"   | C SRS는 cards에 `review_count`/`next_review_at` 컬럼 (word + grammar 모두 적용) |
+| D'. 학습자료 범위 (B 책 단위, C SRS) | "엔티티 목록 > reading_sessions, cards"   | C SRS는 cards에 `review_count`/`last_reviewed_at`/`next_review_at` 컬럼 (word + grammar 모두 적용) |
 | G. 책 메타데이터                     | "엔티티 목록 > books" + 결정 1            | books 정규화 결정 추가                                                          |
 | H. 맥락 문장 (앞뒤 2문장)            | (해당 없음 — 프롬프트 빌드 영역)          | DB 스키마와 무관                                                                |
 | I. 백엔드 & DB                       | "백엔드 환경"                             | 그대로 흡수                                                                     |
