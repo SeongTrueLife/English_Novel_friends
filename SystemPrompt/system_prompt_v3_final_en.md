@@ -1,6 +1,8 @@
 # System Prompt v3 — Final (English)
 
-코드 ingest용 최종본. `sentencemate-reader/src/utils/systemPrompt.js`의 `SYSTEM_PROMPT` 상수로 들어가는 영어 본문.
+코드 ingest용 최종본. **Supabase Edge Function `supabase/functions/ask-ai/index.ts`** 안의 `SYSTEM_PROMPT` 상수로 들어가는 영어 본문 (서버 전용 — 클라이언트 번들에 노출 안 됨).
+
+> **위치 메모(2026-06-09 backend_design 반영)**: 원래 클라이언트 `src/utils/systemPrompt.js`에 두려 했으나, backend_design에서 Gemini를 **Edge Function 프록시**로 호출하기로 확정 → 시스템 프롬프트·responseSchema·user message 조립은 모두 **서버(Edge Function)에만** 둔다(자산 보호 + 중앙 교체). 클라이언트는 구조화된 컨텍스트만 `services/ai.askAI()`로 전송. 상세: [backend_design_v1_26_06_09.md](../plan/backend_design_v1_26_06_09.md) ①·③.
 
 한국어 검토본은 `system_prompt_v3_draft.md` 참조 (의도/철학/토론 기록).
 
@@ -255,9 +257,9 @@ For easy sentences, `vocab` and `grammar` may be empty arrays; `sentence_thinkin
 
 ---
 
-## buildUserMessage 형식 (영어 마커로 통일)
+## User Message 형식 (영어 마커로 통일)
 
-`systemPrompt.js`의 `buildUserMessage` 함수가 생성해야 할 user message 형식:
+**Edge Function(`ask-ai`)이** 클라이언트가 보낸 구조화 컨텍스트(`askAI({ bookInfo, prev, selected, next, userRequest })`, backend_design ③)로 조립하는 user message 형식. 서버에서 `SYSTEM_PROMPT`와 합쳐 Gemini에 전달한다:
 
 ```
 [Book Info] {title} — {author}
@@ -275,9 +277,83 @@ For easy sentences, `vocab` and `grammar` may be empty arrays; `sentence_thinkin
 - Book Info / Previous 2 / Previous 1 / Next 1 / Next 2 / User Request 는 **선택적** (값이 없으면 해당 줄 자체를 출력하지 않음)
 - 마지막 줄 "위의 [Selected] 문장을 설명해주세요." 는 한국어 (출력 언어를 한국어로 유도)
 
-## JSON Response Schema
+## JSON Response Schema (정본)
 
-`useGeminiAPI.js`에서 `generationConfig.responseSchema`에 들어갈 스키마는 `system_prompt_v3_draft.md`에 적힌 그대로 사용. type enum, key 이름 모두 영어로 그대로.
+**Edge Function(`ask-ai`)의 `generationConfig.responseSchema`**에 들어갈 스키마 (서버 전용, 중앙 한 곳 — backend_design ⑤). type enum·key 이름 모두 영어 그대로. **이 블록이 정본**이며, `system_prompt_v3_draft.md`의 동일 블록은 작성 기록(비정본).
+
+```js
+const responseSchema = {
+  type: "object",
+  properties: {
+    vocab: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          word: { type: "string" },
+          meaning: { type: "string" },
+          thinking: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                type: {
+                  type: "string",
+                  enum: ["core_image", "culture", "author_intent"],
+                },
+                title: { type: "string" },
+                body: { type: "string" },
+              },
+              required: ["type", "title", "body"],
+            },
+          },
+        },
+        required: ["word", "meaning", "thinking"],
+      },
+    },
+    grammar: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          pattern: { type: "string" },
+          explanation: { type: "string" },
+          interpretation_guide: { type: "string" },
+        },
+        required: ["pattern", "explanation", "interpretation_guide"],
+      },
+    },
+    sentence_thinking: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          type: {
+            type: "string",
+            enum: ["culture", "author_intent"],
+          },
+          title: { type: "string" },
+          body: { type: "string" },
+        },
+        required: ["type", "title", "body"],
+      },
+    },
+    naturalTranslation: { type: "string" },
+  },
+  required: ["vocab", "grammar", "sentence_thinking", "naturalTranslation"],
+};
+```
+
+generationConfig:
+
+```js
+generationConfig: {
+  temperature: 0.7,
+  maxOutputTokens: 2048,
+  responseMimeType: "application/json",
+  responseSchema
+}
+```
 
 ## v2 final_en → v3 final_en 변경 요약
 

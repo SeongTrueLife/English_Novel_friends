@@ -254,7 +254,7 @@ user message에 [책 정보] 줄이 포함될 수 있습니다 (예: "Pride and 
 
 ## JSON Response Schema (Gemini Structured Output용)
 
-`useGeminiAPI.js`에서 `generationConfig.responseSchema`에 들어갈 스키마.
+> **정본은 [system_prompt_v3_final_en.md](system_prompt_v3_final_en.md)의 동일 블록.** 위치도 `useGeminiAPI.js`가 아니라 **Edge Function `ask-ai`**(backend_design 확정). 아래는 작성 기록(비정본).
 
 ```js
 const responseSchema = {

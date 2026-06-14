@@ -169,7 +169,7 @@ services/
 
 ### 파일 구조
 
-도메인별 분리(`ai/books/cards/sessions`) — 파일 수는 늘지만 코드 파악이 빠름. plan_v3가 적은 `utils/supabase.js` 단일 파일 대신 `services/` 디렉토리로 분리. (supabase 클라이언트 인스턴스 자체는 `utils/supabase.js`에 두고 각 service가 import.)
+도메인별 분리(`ai/books/cards/sessions`) — 파일 수는 늘지만 코드 파악이 빠름. plan_v3가 적은 단일 파일 대신 `services/` 디렉토리로 분리. (supabase 클라이언트 인스턴스 자체는 `lib/supabase.js`에 두고 각 service가 import — 폴더는 frontend_arch ③에서 `lib/`로 확정, 구 `utils/` 표기 갱신.)
 
 ### 왜 JavaScript인가
 
@@ -213,7 +213,7 @@ epub 출처가 두 갈래, 사는 곳이 다름:
 
 마지막 줄이 plan_v3 J의 "단말기마다 epub 한 번씩 올림" — book_hash로 단어장·진행은 자동 연결되나 *파일*은 로컬에만 있어 새 단말기엔 재업로드 필요(의도된 저작권 회피 설계).
 
-> epub 로딩 세부 구현(`utils/indexeddb.js`, EpubReader 배선)은 **프론트 영역**. 백엔드 문서는 버킷 정책 + 가져오기 흐름 계약까지.
+> epub 로딩 세부 구현(`lib/indexeddb.js`, EpubReader 배선)은 **프론트 영역**. 백엔드 문서는 버킷 정책 + 가져오기 흐름 계약까지.
 
 ---
 
@@ -326,10 +326,10 @@ getUser() → user.id
 **신규**:
 
 - `supabase/functions/ask-ai/index.ts` — **Edge Function**: JWT 검증 → 쿼터 체크 → Gemini 호출(키·시스템프롬프트·responseSchema·1회 재시도) → 카운트 증가 → v3 JSON 반환
-- `utils/supabase.js` — supabase 클라이언트(익명 자동 로그인, persist/autoRefresh)
+- `lib/supabase.js` — supabase 클라이언트(익명 자동 로그인, persist/autoRefresh)
 - `services/ai.js` · `services/books.js` · `services/cards.js` · `services/sessions.js` — 데이터 접근 계층
-- `utils/indexeddb.js` — epub 로컬 어댑터 (프론트와 공유)
-- `utils/bookHash.js` — SHA-256 해시
+- `lib/indexeddb.js` — epub 로컬 어댑터 (프론트와 공유)
+- `lib/bookHash.js` — SHA-256 해시
 - **DB 마이그레이션 SQL** — db_schema v2.1 + `ai_usage` 적용
 
 **기존 변경**(plan_v3 영향 파일과 연동):
