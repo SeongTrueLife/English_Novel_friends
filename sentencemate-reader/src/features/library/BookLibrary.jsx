@@ -1,8 +1,10 @@
 // 서재 (frontend_plan §6.1) — 첫 실제 화면. useLibrary(→services/books) 통해서만 데이터 접근(불변규칙 2).
 // 상태 UI(스켈레톤/빈/에러, §6.8)는 지금은 로컬 컴포넌트, 재사용 시 components/ui/로 승격(M4/M7).
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLibrary } from './useLibrary'
 import BookCover from './BookCover'
+import AddBookSheet from './AddBookSheet'
 import './BookLibrary.css'
 
 // progress_pct(0~100, null 가능)를 0~100 정수 %로.
@@ -13,36 +15,46 @@ function pctOf(row) {
 export default function BookLibrary() {
   const navigate = useNavigate()
   const { data: rows, isPending, isError, refetch } = useLibrary()
+  const [addOpen, setAddOpen] = useState(false)
 
-  // TODO: #4 AddBookSheet 오버레이 (다음 조각). 지금은 stub.
-  const handleAddBook = () => {
-    /* TODO: #4 AddBookSheet */
-  }
+  const openAdd = () => setAddOpen(true)
   const openBook = (bookId) => navigate(`/read/${bookId}`)
 
-  if (isPending) return <LibrarySkeleton />
-  if (isError) return <LibraryError onRetry={refetch} />
-  if (!rows || rows.length === 0) return <LibraryEmpty onAdd={handleAddBook} />
+  // 분기 결과를 content로 모아 시트(오버레이)를 어느 상태에서나 함께 렌더한다.
+  let content
+  if (isPending) {
+    content = <LibrarySkeleton />
+  } else if (isError) {
+    content = <LibraryError onRetry={refetch} />
+  } else if (!rows || rows.length === 0) {
+    content = <LibraryEmpty onAdd={openAdd} />
+  } else {
+    // getLibrary가 last_opened DESC NULLS LAST → 첫 행이 가장 최근 연 책. 연 적 없으면(NULL) 숨김.
+    const recent = rows[0]?.last_opened_at ? rows[0] : null
+    content = (
+      <main className="screen library">
+        <h1 className="library__title">서재</h1>
 
-  // getLibrary가 last_opened DESC NULLS LAST → 첫 행이 가장 최근 연 책. 연 적 없으면(NULL) 숨김.
-  const recent = rows[0]?.last_opened_at ? rows[0] : null
+        {recent && <ContinueReading row={recent} onOpen={openBook} />}
+
+        <section className="library__shelf">
+          <h2 className="library__h2">내 서재</h2>
+          <div className="book-grid">
+            {rows.map((row) => (
+              <BookGridItem key={row.book_id} row={row} onOpen={openBook} />
+            ))}
+            <AddBookTile onClick={openAdd} />
+          </div>
+        </section>
+      </main>
+    )
+  }
 
   return (
-    <main className="screen library">
-      <h1 className="library__title">서재</h1>
-
-      {recent && <ContinueReading row={recent} onOpen={openBook} />}
-
-      <section className="library__shelf">
-        <h2 className="library__h2">내 서재</h2>
-        <div className="book-grid">
-          {rows.map((row) => (
-            <BookGridItem key={row.book_id} row={row} onOpen={openBook} />
-          ))}
-          <AddBookTile onClick={handleAddBook} />
-        </div>
-      </section>
-    </main>
+    <>
+      {content}
+      {addOpen && <AddBookSheet onClose={() => setAddOpen(false)} />}
+    </>
   )
 }
 

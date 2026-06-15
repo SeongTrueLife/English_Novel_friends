@@ -1,0 +1,202 @@
+/* 책 추가 오버레이 (frontend_plan §6.5). backdrop + 하단 시트 패널. feature-local. */
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(42, 39, 36, 0.4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.sheet {
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 20px;
+  animation: sheet-rise 0.18s ease-out;
+}
+
+@media (orientation: landscape) {
+  /* 가로에선 가운데 떠 있는 카드처럼 */
+  .sheet-backdrop {
+    align-items: center;
+  }
+  .sheet {
+    border-bottom: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+}
+
+@keyframes sheet-rise {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sheet__title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 19px;
+  margin: 0;
+}
+
+.sheet__close {
+  border: none;
+  background: none;
+  font-size: 16px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.sheet__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+/* ── ① 파일 선택 ───────────────────────────────────────── */
+.filepick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 36px 16px;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  cursor: pointer;
+  text-align: center;
+}
+
+.filepick__input {
+  display: none;
+}
+
+.filepick__plus {
+  font-size: 30px;
+  line-height: 1;
+  color: var(--text-tertiary);
+}
+
+.filepick__label {
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.filepick__hint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+/* ── ② 폼 필드 ─────────────────────────────────────────── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.field__input {
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font: 15px var(--font-sans);
+}
+
+.field__input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* 안내·경고·에러 */
+.form__note {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+.form__warning {
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--accent-soft-bg);
+  border-left: 3px solid var(--warning-line);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin: 0;
+}
+
+.form__error {
+  font-size: 13px;
+  color: var(--danger);
+  margin: 0;
+}
+
+/* ── 액션 버튼 ─────────────────────────────────────────── */
+.sheet__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.btn-primary,
+.btn-ghost {
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font: 500 14px var(--font-sans);
+  cursor: pointer;
+}
+
+.btn-primary {
+  border: none;
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:disabled {
+  background: var(--border-strong);
+  color: var(--text-tertiary);
+  cursor: default;
+}
+
+.btn-ghost {
+  border: 1px solid var(--border-strong);
+  background: none;
+  color: var(--text-secondary);
+}
+
+.btn-ghost:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
