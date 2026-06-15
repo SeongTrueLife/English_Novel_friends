@@ -152,7 +152,7 @@ src/
 │
 ├─ features/                 ★ 화면별로 묶기 (기능별)
 │   ├─ library/   BookLibrary, ContinueReading, BookCover(타이포폴백), AddBookTile, useLibrary
-│   ├─ reader/    EpubReader, AIResponse, VocabItem, ThinkingCard, GrammarItem, NaturalTranslation, FollowUp, useReader
+│   ├─ reader/    EpubReader, ReaderControls(TopBar·ProgressScrubber·TocSheet·SettingsSheet), AIResponse, VocabItem, ThinkingCard, GrammarItem, NaturalTranslation, FollowUp, useReader
 │   ├─ vocab/     VocabList, FlashcardStudy, StudyScopeSheet, useCards
 │   ├─ stats/     StatsDashboard, BookStats, KpiCard, useStats
 │   └─ account/   AddBookSheet(FileUploader+BookMetaForm), LinkAccountSheet

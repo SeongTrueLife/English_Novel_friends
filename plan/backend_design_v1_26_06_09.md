@@ -334,6 +334,8 @@ getUser() → user.id
 
 **기존 변경**(plan_v3 영향 파일과 연동):
 
+> **(plan_v3 §L 갱신, 2026-06-15)**: v2는 **fresh scaffold**라 아래는 in-place 수정이 아니라 `sentencemate-reader-v1/`에서 **로직만 참고해 새 구조(`services/`)로 작성**한다.
+
 - `useGeminiAPI.js` — 직접 Gemini 호출 제거 → `services/ai.askAI()` 경유 (Edge Function). multi-turn `contents` 누적은 askAI 인자로
 - `FileUploader.jsx` — `upsertBookByHash` + IndexedDB 저장
 - `storage.js` — 대부분 폐기 → service layer로
