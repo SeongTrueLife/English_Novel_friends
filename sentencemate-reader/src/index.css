@@ -1,7 +1,10 @@
-/* M0 최소 base. 본격 디자인 토큰(frontend_plan §3)은 후속 M에서 styles/로. */
+/* 디자인 토큰(frontend_plan §3) — @import는 다른 규칙보다 앞서야 함. */
+@import './styles/tokens.css';
+
+/* 전역 base. 색·폰트는 토큰을 따른다("조용한 서재" 톤). */
 :root {
-  font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
-  color-scheme: light dark;
+  font: 16px/1.5 var(--font-sans);
+  color-scheme: light;
 }
 
 * {
@@ -10,6 +13,9 @@
 
 body {
   margin: 0;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
 }
 
 /* 셸: 화면 영역 + 하단 탭바 */
@@ -29,7 +35,8 @@ body {
 
 .tab-bar {
   display: flex;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid var(--border);
+  background: var(--bg-primary);
   position: sticky;
   bottom: 0;
 }
@@ -39,10 +46,11 @@ body {
   text-align: center;
   padding: 14px 0;
   text-decoration: none;
-  color: inherit;
+  color: var(--text-secondary);
 }
 
 .tab--active {
-  font-weight: 600;
-  border-top: 2px solid currentColor;
+  font-weight: 500;
+  color: var(--accent);
+  border-top: 2px solid var(--accent);
 }

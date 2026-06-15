@@ -1,0 +1,38 @@
+/* 디자인 토큰 — "조용한 서재(quiet study)" (frontend_plan §3).
+   미리보기 mockup은 중립 톤이지만 실제 빌드는 아래 따뜻한 토큰을 적용한다.
+   다크모드(야간 독서)는 같은 구조로 값만 교체 — 적용 시점은 다음 단계. */
+:root {
+  /* 표면 (따뜻한 종이) */
+  --bg-page: #efe9e0; /* 앱 바깥/스테이지 */
+  --bg-primary: #fcfaf6; /* 카드·본문 표면 */
+  --bg-secondary: #f3eee6; /* 패널·인셋·칩 */
+
+  /* 텍스트 (잉크) */
+  --text-primary: #2a2724;
+  --text-secondary: #6b655c;
+  --text-tertiary: #9a9388;
+
+  /* 악센트 (청록) — 대안: 점토색 #B5713F 계열 */
+  --accent: #2c6f61;
+  --accent-soft-bg: #e7f1ee;
+  --accent-line: #3e9683; /* 진행바·밑줄·강조선 */
+
+  /* 시맨틱 */
+  --success: #3e8e5a;
+  --warning: #b5852f;
+  --warning-line: #d8b36a;
+  --danger: #b5503f;
+
+  /* 경계 */
+  --border: #e3dcd0; /* 0.5px hairline */
+  --border-strong: #d8d0c4;
+
+  /* 타이포 */
+  --font-serif: Georgia, 'Noto Serif KR', serif; /* 본문·책 제목·큰 숫자 */
+  --font-sans: -apple-system, 'Noto Sans KR', sans-serif; /* UI */
+
+  /* 모양 */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+}

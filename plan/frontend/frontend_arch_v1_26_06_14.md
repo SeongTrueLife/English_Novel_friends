@@ -151,11 +151,11 @@ src/
 │   └─ AppShell.jsx          탭바↔레일 셸 (리더 라우트에서 숨김)
 │
 ├─ features/                 ★ 화면별로 묶기 (기능별)
-│   ├─ library/   BookLibrary, ContinueReading, BookCover(타이포폴백), AddBookTile, useLibrary
+│   ├─ library/   BookLibrary, ContinueReading, BookCover(타이포폴백), AddBookTile, AddBookSheet(FileUploader+BookMetaForm), useLibrary
 │   ├─ reader/    EpubReader, ReaderControls(TopBar·ProgressScrubber·TocSheet·SettingsSheet), AIResponse, VocabItem, ThinkingCard, GrammarItem, NaturalTranslation, FollowUp, useReader
 │   ├─ vocab/     VocabList, FlashcardStudy, StudyScopeSheet, useCards
 │   ├─ stats/     StatsDashboard, BookStats, KpiCard, useStats
-│   └─ account/   AddBookSheet(FileUploader+BookMetaForm), LinkAccountSheet
+│   └─ account/   LinkAccountSheet   (AddBookSheet은 라이브러리에서 띄우므로 library/로 이동 — 2026 구현 시 정정)
 │
 ├─ services/                 ★ 데이터 접근 계층 (backend_design 확정 — 종류별)
 │   └─ ai.js  books.js  cards.js  sessions.js   (+ 나중: sentences.js)
