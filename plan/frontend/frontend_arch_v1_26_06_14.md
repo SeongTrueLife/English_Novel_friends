@@ -13,20 +13,20 @@
 - [../../SystemPrompt/system_prompt_v3_final_en.md](../../SystemPrompt/system_prompt_v3_final_en.md) — AI 응답 JSON 스키마
 - [frontend_learning_notes.md](frontend_learning_notes.md) — **프론트엔드 개념 일반론**(라우팅·상태·캐시·폴더·시퀀싱 강의). 복습용, 비정본
 
-> **이 문서의 역할**: frontend_plan이 *"어떤 화면을 그리나"*(UI/UX)를 다뤘고, 이 문서는 그 화면을 떠받칠 *"기술 뼈대를 어떻게 짜나"*(라우팅·상태·폴더·구현 순서)를 못 박는다. 화면 디테일은 frontend_plan, 데이터 주고받기 계약은 backend_design 참조(단일 출처 원칙).
+> **이 문서의 역할**: frontend_plan이 _"어떤 화면을 그리나"_(UI/UX)를 다뤘고, 이 문서는 그 화면을 떠받칠 _"기술 뼈대를 어떻게 짜나"_(라우팅·상태·폴더·구현 순서)를 못 박는다. 화면 디테일은 frontend_plan, 데이터 주고받기 계약은 backend_design 참조(단일 출처 원칙).
 
 ---
 
 ## 0. 한눈에 — 확정된 갈림길
 
-| 항목 | 결정 | 한 줄 이유 |
-| --- | --- | --- |
-| **① 라우팅** | **react-router-dom 도입** (URL 기반, 클라이언트 사이드) | 멀티화면 PWA → 뒤로가기·새로고침 위치보존·딥링크가 공짜. 태블릿 1차라 시스템 뒤로가기 필수 |
-| **라우트 vs 오버레이** | 목적지 = 라우트 / 곁일(sub-task) = 오버레이 상태 | AI시트·책추가·계정연결은 화면이 아니라 *맥락 위 상태* → 라우트로 만들지 않음 |
-| **② 상태관리** | **C 조합: TanStack Query(서버) + Zustand(클라, 작게)** | 이 앱은 서버 상태가 압도적 → 전용 도구가 최대 ROI. throw 컨벤션·낙관적 업데이트 UX와 정합 |
-| **③ 폴더 구조** | **하이브리드** (공통=종류별 / 화면=기능별 `features/`) | 솔로·7화면. "단어장만 고치기 = `features/vocab/`" 직관 + 공통은 깔끔히 모음 |
-| **④ 시퀀싱** | **수직 슬라이스**, M0~M8 (핵심루프 = M5) | 층 쌓기(수평) 함정 회피. 첫날부터 돌아가는 상태 유지 |
-| **⑤ 환경/시크릿** | `VITE_` 접두사만 클라 노출 / 비밀키는 Edge Function secret | `VITE_`=무조건 번들에 노출 → 비밀엔 절대 안 붙임 |
+| 항목                   | 결정                                                       | 한 줄 이유                                                                                 |
+| ---------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| **① 라우팅**           | **react-router-dom 도입** (URL 기반, 클라이언트 사이드)    | 멀티화면 PWA → 뒤로가기·새로고침 위치보존·딥링크가 공짜. 태블릿 1차라 시스템 뒤로가기 필수 |
+| **라우트 vs 오버레이** | 목적지 = 라우트 / 곁일(sub-task) = 오버레이 상태           | AI시트·책추가·계정연결은 화면이 아니라 _맥락 위 상태_ → 라우트로 만들지 않음               |
+| **② 상태관리**         | **C 조합: TanStack Query(서버) + Zustand(클라, 작게)**     | 이 앱은 서버 상태가 압도적 → 전용 도구가 최대 ROI. throw 컨벤션·낙관적 업데이트 UX와 정합  |
+| **③ 폴더 구조**        | **하이브리드** (공통=종류별 / 화면=기능별 `features/`)     | 솔로·7화면. "단어장만 고치기 = `features/vocab/`" 직관 + 공통은 깔끔히 모음                |
+| **④ 시퀀싱**           | **수직 슬라이스**, M0~M8 (핵심루프 = M5)                   | 층 쌓기(수평) 함정 회피. 첫날부터 돌아가는 상태 유지                                       |
+| **⑤ 환경/시크릿**      | `VITE_` 접두사만 클라 노출 / 비밀키는 Edge Function secret | `VITE_`=무조건 번들에 노출 → 비밀엔 절대 안 붙임                                           |
 
 ---
 
@@ -48,19 +48,19 @@
 
 > **그 자체가 목적지(destination)면 라우트, 지금 맥락 위 곁일(sub-task)이면 오버레이.**
 
-오버레이를 라우트로 만들면 뒤로가기 의미가 모호해짐(리더에서 단어 물었는데 주소 바뀌면 뒤로가기가 시트만 닫을지 리더를 나갈지 애매). frontend_plan §4 "회전 시 상태 보존"(바텀시트↔사이드패널 = 레이아웃만 전환, 열림·내용 유지)과도 정합 — AI 시트는 화면이 아니라 *리더의 한 상태*.
+오버레이를 라우트로 만들면 뒤로가기 의미가 모호해짐(리더에서 단어 물었는데 주소 바뀌면 뒤로가기가 시트만 닫을지 리더를 나갈지 애매). frontend_plan §4 "회전 시 상태 보존"(바텀시트↔사이드패널 = 레이아웃만 전환, 열림·내용 유지)과도 정합 — AI 시트는 화면이 아니라 _리더의 한 상태_.
 
 ### 화면 지도 (라우트 표)
 
-| 라우트 | 화면 | 셸(AppShell) | 비고 |
-| --- | --- | --- | --- |
-| `/` | → `/library` redirect | — | |
-| `/library` | 서재 (첫 화면) | 표시 | frontend_plan §6.1 |
-| `/read/:bookId` | 리더 | **숨김**(몰입) | §6.2. AI시트는 오버레이 |
-| `/vocab` | 단어장 목록 | 표시 | §6.3. 단어/문법 탭 = `?tab=word\|grammar` 쿼리파라미터 |
-| `/vocab/study` | 플래시카드 학습 | 표시 | §6.4. 범위시트 → 카드 |
-| `/stats` | 통계 대시보드 | 표시 | §6.6 |
-| `/stats/:bookId` | 책별 상세 | 표시 | §6.7 |
+| 라우트           | 화면                  | 셸(AppShell)   | 비고                                                   |
+| ---------------- | --------------------- | -------------- | ------------------------------------------------------ |
+| `/`              | → `/library` redirect | —              |                                                        |
+| `/library`       | 서재 (첫 화면)        | 표시           | frontend_plan §6.1                                     |
+| `/read/:bookId`  | 리더                  | **숨김**(몰입) | §6.2. AI시트는 오버레이                                |
+| `/vocab`         | 단어장 목록           | 표시           | §6.3. 단어/문법 탭 = `?tab=word\|grammar` 쿼리파라미터 |
+| `/vocab/study`   | 플래시카드 학습       | 표시           | §6.4. 범위시트 → 카드                                  |
+| `/stats`         | 통계 대시보드         | 표시           | §6.6                                                   |
+| `/stats/:bookId` | 책별 상세             | 표시           | §6.7                                                   |
 
 **오버레이(라우트 아님, 어느 화면에서나 상태로 띄움)**: AI 응답 시트(리더) · 책 추가 모달 · 계정 연결 시트 · 설정.
 
@@ -73,10 +73,10 @@
 
 ### 대전제: 상태는 두 종류 — 서버 상태 / 클라이언트 상태
 
-| 종류 | 진짜 주인 | 예시 | 도구 |
-| --- | --- | --- | --- |
-| **서버 상태**(서버 캐시) | Supabase(원격) | 카드 목록, 라이브러리, AI 응답, 읽기 진척, 통계 | **TanStack Query** |
-| **클라이언트 상태**(UI) | 이 브라우저 | user 세션, 다크모드, 폰트크기, 읽기설정 | **Zustand**(전역 소수) / **useState**(컴포넌트 로컬) |
+| 종류                     | 진짜 주인      | 예시                                            | 도구                                                 |
+| ------------------------ | -------------- | ----------------------------------------------- | ---------------------------------------------------- |
+| **서버 상태**(서버 캐시) | Supabase(원격) | 카드 목록, 라이브러리, AI 응답, 읽기 진척, 통계 | **TanStack Query**                                   |
+| **클라이언트 상태**(UI)  | 이 브라우저    | user 세션, 다크모드, 폰트크기, 읽기설정         | **Zustand**(전역 소수) / **useState**(컴포넌트 로컬) |
 
 화면에 보이는 서버 데이터는 **원본의 복사본(캐시)** — 다른 기기 변경 시 낡아짐(stale), 네트워크라 로딩/에러가 따라옴. 이 골칫거리(캐싱·재요청·로딩/에러·중복제거·여러 화면 공유·저장 후 갱신)는 **서버 상태에만** 존재 → 전용 도구가 필요.
 
@@ -86,18 +86,26 @@
 
 ```jsx
 // 읽기 — queryKey로 캐시. 같은 키는 한 번 요청·여러 화면 공유
-const { data: cards, isLoading, error } = useQuery({
-  queryKey: ['cards', { bookId, kind }],
-  queryFn: () => getCards({ bookId, kind }),   // ← service layer 그대로
-})
+const {
+  data: cards,
+  isLoading,
+  error,
+} = useQuery({
+  queryKey: ["cards", { bookId, kind }],
+  queryFn: () => getCards({ bookId, kind }), // ← service layer 그대로
+});
 
 // 쓰기 — 저장 후 목록 자동 갱신 + 낙관적 업데이트
 const { mutate: save } = useMutation({
   mutationFn: saveWordCard,
-  onMutate: async (newCard) => { /* 즉시 ⊕→✓ (낙관적) */ },
-  onError: (e, v, ctx) => { /* ✓→⊕ 롤백 + 토스트 */ },
-  onSettled: () => queryClient.invalidateQueries({ queryKey: ['cards'] }),
-})
+  onMutate: async (newCard) => {
+    /* 즉시 ⊕→✓ (낙관적) */
+  },
+  onError: (e, v, ctx) => {
+    /* ✓→⊕ 롤백 + 토스트 */
+  },
+  onSettled: () => queryClient.invalidateQueries({ queryKey: ["cards"] }),
+});
 ```
 
 **우리 설계와의 맞물림**:
@@ -107,12 +115,12 @@ const { mutate: save } = useMutation({
 
 ### queryKey / 무효화(invalidation) 컨벤션
 
-| queryKey | 쓰는 화면 | 무효화 트리거 |
-| --- | --- | --- |
-| `['library']` | 서재 | 책 추가/제거, 진척 갱신 |
-| `['cards', { bookId?, kind? }]` | 단어장·통계·책별상세 | 카드 저장/삭제 |
-| `['book', bookId]` | 리더·책별상세 | 진척 갱신 |
-| `['stats']` | 통계 대시보드 | 카드 저장/삭제 |
+| queryKey                        | 쓰는 화면            | 무효화 트리거           |
+| ------------------------------- | -------------------- | ----------------------- |
+| `['library']`                   | 서재                 | 책 추가/제거, 진척 갱신 |
+| `['cards', { bookId?, kind? }]` | 단어장·통계·책별상세 | 카드 저장/삭제          |
+| `['book', bookId]`              | 리더·책별상세        | 진척 갱신               |
+| `['stats']`                     | 통계 대시보드        | 카드 저장/삭제          |
 
 - **AI 응답(`askAI`)은 캐시 대상 아님** — 매번 새 호출이라 `useMutation`으로 다룸(읽기 캐시 X). follow-up 멀티턴도 mutation 누적.
 - 무효화는 "성공 후 관련 키 invalidate" 표준 패턴(위 `onSettled`).
@@ -123,12 +131,14 @@ const { mutate: save } = useMutation({
 
 ```js
 // stores/useSettings.js
-import { create } from 'zustand'
+import { create } from "zustand";
 export const useSettings = create((set) => ({
-  theme: 'light', fontSize: 18,
-  toggleTheme: () => set((s) => ({ theme: s.theme === 'light' ? 'dark' : 'light' })),
+  theme: "light",
+  fontSize: 18,
+  toggleTheme: () =>
+    set((s) => ({ theme: s.theme === "light" ? "dark" : "light" })),
   setFontSize: (n) => set({ fontSize: n }),
-}))
+}));
 ```
 
 **store는 둘만(예상)**: `useSession`(로그인 user) · `useSettings`(테마·폰트·읽기설정).
@@ -183,14 +193,14 @@ src/
 
 ## ④ 의존성 (도입 목록)
 
-| 패키지 | 용도 | 갈림길 |
-| --- | --- | --- |
-| `react-router-dom` | 라우팅 | ① |
-| `@tanstack/react-query` | 서버 상태 | ② |
-| `zustand` | 클라 상태(전역 소수) | ② |
-| `@supabase/supabase-js` | Supabase 클라이언트 | backend |
-| `idb` | IndexedDB 래퍼(epub 로컬) | backend J |
-| `vite-plugin-pwa` (M8) | PWA(설치·오프라인) | plan_v3 K |
+| 패키지                  | 용도                      | 갈림길    |
+| ----------------------- | ------------------------- | --------- |
+| `react-router-dom`      | 라우팅                    | ①         |
+| `@tanstack/react-query` | 서버 상태                 | ②         |
+| `zustand`               | 클라 상태(전역 소수)      | ②         |
+| `@supabase/supabase-js` | Supabase 클라이언트       | backend   |
+| `idb`                   | IndexedDB 래퍼(epub 로컬) | backend J |
+| `vite-plugin-pwa` (M8)  | PWA(설치·오프라인)        | plan_v3 K |
 
 기존: `react@19`, `react-dom@19`, `epubjs`, `vite@8` 유지.
 
@@ -200,13 +210,13 @@ src/
 
 > **철칙: `VITE_` 접두사가 붙은 변수는 무조건 클라이언트 번들에 노출된다 → 비밀 키엔 절대 `VITE_`를 안 붙인다.**
 
-| 변수 | 위치 | 클라 번들 | 비고 |
-| --- | --- | --- | --- |
-| `VITE_SUPABASE_URL` | `.env`(커밋 X) | ✅ (공개 OK) | |
-| `VITE_SUPABASE_ANON_KEY` | `.env` | ✅ (**설계상 공개**) | RLS가 보호 |
-| `GEMINI_API_KEY` | **Edge Function secret** (`supabase secrets set`) | ❌ 절대 | 운영자 키 |
-| `SUPABASE_SERVICE_ROLE_KEY` | Edge Function + seed 스크립트 env | ❌ 절대 | RLS 무력화 |
-| `AI_DAILY_QUOTA` | Edge Function env | ❌ | 쿼터 한도(기본 100) |
+| 변수                        | 위치                                              | 클라 번들            | 비고                |
+| --------------------------- | ------------------------------------------------- | -------------------- | ------------------- |
+| `VITE_SUPABASE_URL`         | `.env`(커밋 X)                                    | ✅ (공개 OK)         |                     |
+| `VITE_SUPABASE_ANON_KEY`    | `.env`                                            | ✅ (**설계상 공개**) | RLS가 보호          |
+| `GEMINI_API_KEY`            | **Edge Function secret** (`supabase secrets set`) | ❌ 절대              | 운영자 키           |
+| `SUPABASE_SERVICE_ROLE_KEY` | Edge Function + seed 스크립트 env                 | ❌ 절대              | RLS 무력화          |
+| `AI_DAILY_QUOTA`            | Edge Function env                                 | ❌                   | 쿼터 한도(기본 100) |
 
 - `.gitignore`: `.env*` (단 `.env.example`은 커밋해 키 목록 공유).
 - backend_design 보안 체크리스트 1·2번(키 노출 금지)과 정합. 출시 전 grep으로 클라 번들/git에 비밀키 없는지 확인.
@@ -220,17 +230,17 @@ src/
 **핵심 루프**(= 앱이 살아있다고 말하는 최소 동작):
 `책 연다 → 문장 선택 → Ask AI → 응답 렌더 → ⊕ 카드 저장 → 단어장 확인`
 
-| M | 마일스톤 | 끝나면 동작 | 관련 |
-| --- | --- | --- | --- |
-| **M0** | **토대** | 라이브러리 설치 + 폴더 구조 + `App.jsx` 라우터 + `AppShell` 껍데기 + `lib/supabase.js`(익명 부팅) + QueryClientProvider. 빈 화면이지만 라우팅·인증이 산다 | ①②③ |
-| **M1** | **DB 마이그레이션 + 인증 확인** | db_schema v2.1 SQL 적용 + RLS 테스트. 익명 user 부팅·토큰 발급 확인 | DB·backend |
-| **M2** | **라이브러리 + 책 추가**(슬라이스1) | epub 업로드 → hash·파싱 → IndexedDB 저장 + `upsertBookByHash` → 서재 표지 등장 | §6.1·6.5 |
-| **M3** | **리더 + 선택** | 책 탭 → epub.js paginated → 문장 선택 → "Ask AI" + 앞뒤 2문장 추출(AI 연결 전) | §6.2 |
-| **M4** | **AI 연동 + 응답 렌더** | `askAI` → Edge Function → v3 JSON → 4축 렌더(thinking 펼침/자연해석 접힘) + 로딩 스켈레톤·에러(429/502) | §6.2·6.8 |
-| **M5** | **카드 저장 + 단어장** 🎉 | `⊕` 낙관적 저장(`useMutation`) → `cards` 적재 → 단어장(단어/문법 탭·책필터). **핵심 루프 완성** | §6.2·6.3 |
-| **M6** | **follow-up + 읽기 진척** | AI 멀티턴 누적, CFI 진행 저장, reading_sessions 시작/마감 | §6.2·세션 |
-| **M7** | **플래시카드 + 통계(카드기반)** | 학습 모드(뒤집기·범위시트, SRS 간격계산 제외), 통계 대시보드(카드 수·진척) | §6.4·6.6 |
-| **M8** | **가입 유도 + PWA + 출시 점검** | LinkAccountSheet(50개 마일스톤), vite-plugin-pwa, 보안 체크리스트 | §6.9·배포 |
+| M      | 마일스톤                            | 끝나면 동작                                                                                                                                               | 관련       |
+| ------ | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| **M0** | **토대**                            | 라이브러리 설치 + 폴더 구조 + `App.jsx` 라우터 + `AppShell` 껍데기 + `lib/supabase.js`(익명 부팅) + QueryClientProvider. 빈 화면이지만 라우팅·인증이 산다 | ①②③        |
+| **M1** | **DB 마이그레이션 + 인증 확인**     | db_schema v2.1 SQL 적용 + RLS 테스트. 익명 user 부팅·토큰 발급 확인                                                                                       | DB·backend |
+| **M2** | **라이브러리 + 책 추가**(슬라이스1) | epub 업로드 → hash·파싱 → IndexedDB 저장 + `upsertBookByHash` → 서재 표지 등장                                                                            | §6.1·6.5   |
+| **M3** | **리더 + 선택**                     | 책 탭 → epub.js paginated → 문장 선택 → "Ask AI" + 앞뒤 2문장 추출(AI 연결 전)                                                                            | §6.2       |
+| **M4** | **AI 연동 + 응답 렌더**             | `askAI` → Edge Function → v3 JSON → 4축 렌더(thinking 펼침/자연해석 접힘) + 로딩 스켈레톤·에러(429/502)                                                   | §6.2·6.8   |
+| **M5** | **카드 저장 + 단어장** 🎉           | `⊕` 낙관적 저장(`useMutation`) → `cards` 적재 → 단어장(단어/문법 탭·책필터). **핵심 루프 완성**                                                           | §6.2·6.3   |
+| **M6** | **follow-up + 읽기 진척**           | AI 멀티턴 누적, CFI 진행 저장, reading_sessions 시작/마감                                                                                                 | §6.2·세션  |
+| **M7** | **플래시카드 + 통계(카드기반)**     | 학습 모드(뒤집기·범위시트, SRS 간격계산 제외), 통계 대시보드(카드 수·진척)                                                                                | §6.4·6.6   |
+| **M8** | **가입 유도 + PWA + 출시 점검**     | LinkAccountSheet(50개 마일스톤), vite-plugin-pwa, 보안 체크리스트                                                                                         | §6.9·배포  |
 
 설계 의도:
 
@@ -247,7 +257,7 @@ src/
 
 - Ask AI 옆 `+` 추가 프롬프트 토글 위치·키보드 대응 (M4)
 - follow-up 칩 누적 모양 (M6)
-- 자연 해석 펼침 + **"내가 먼저 적어보기" 입력** (M4~M5) — *추론-우선 정체성의 핵심*
+- 자연 해석 펼침 + **"내가 먼저 적어보기" 입력** (M4~M5) — _추론-우선 정체성의 핵심_
 - 중복 카드 정책 / `last_activity_at` 갱신 트리거 시점 (M5~M6)
 
 > frontend_plan §10의 "라우팅/상태관리(TanStack Query)" 항목은 **이 문서에서 확정**되어 더 이상 보류 아님.

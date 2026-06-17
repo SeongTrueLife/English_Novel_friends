@@ -40,6 +40,18 @@ async function selectBookIdByHash(bookHash) {
   return data?.book_id ?? null
 }
 
+// 단건 책 메타 조회(리더가 URL의 bookId만 받으므로 source/title을 따로 읽는다).
+// books SELECT 정책 USING(true) → 어떤 book_id든 조회 가능. 없으면 null(maybeSingle).
+export async function getBook(bookId) {
+  const { data, error } = await supabase
+    .from('books')
+    .select('book_id, title, author, source')
+    .eq('book_id', bookId)
+    .maybeSingle()
+  if (error) throw error
+  return data // { book_id, title, author, source } | null
+}
+
 // 책을 내 라이브러리에 추가(user_books INSERT). user_id는 getUser로 채움(RLS WITH CHECK 통과).
 // 이미 있으면 무해 — ON CONFLICT DO NOTHING(ignoreDuplicates). user_books엔 INSERT 정책 있음.
 export async function addToLibrary(bookId) {

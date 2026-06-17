@@ -1,0 +1,117 @@
+/* 리더 — 화면을 꽉 채우는 몰입 표면. 탭바는 AppShell이 /read에서 숨긴다. */
+.reader {
+  position: relative;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+/* 뷰어 영역 — paginated가 컨테이너 폭/높이를 그대로 쓰게 한다(v1 검증 구조).
+   measure(~680px §4)는 body 테마(max-width:680;margin:0 auto)가 담당 — 뷰어엔 max-width 금지. */
+.reader__body {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* epub.js가 그려 넣는 뷰포트. 높이 체인: .reader(100svh) → .reader__body(flex:1) → 여기(100%). */
+.reader__viewer {
+  width: 100%;
+  height: 100%;
+}
+
+/* 상단 컨트롤 바 — 본문 가운데 탭으로 토글. absolute라 떠올라도 본문 재배치(재페이지) 없음. */
+.reader__topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+.reader__back {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  line-height: 1;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.reader__title {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 제목을 가운데 정렬하려고 '←' 폭만큼 우측 여백 확보. */
+.reader__topbar-spacer {
+  flex: none;
+  width: 40px;
+}
+
+/* 로딩 — 뷰포트 위 가운데 안내. */
+.reader__loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+}
+
+/* 막힘 상태(파일 없음·에러) — '책에 갇힘' 방지용 서재로 탈출구(§6.2). */
+.reader__message {
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 32px;
+  text-align: center;
+  background: var(--bg-primary);
+}
+
+.reader__message--overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  height: auto;
+}
+
+.reader__message-text {
+  margin: 0;
+  max-width: 320px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.reader__message-back {
+  padding: 10px 20px;
+  font-size: 15px;
+  color: var(--accent);
+  background: var(--accent-soft-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
