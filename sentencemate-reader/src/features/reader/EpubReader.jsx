@@ -6,7 +6,9 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useBook } from './useBook'
 import { useReader } from './useReader'
 import { useTextSelection } from './useTextSelection'
+import { useAskAI } from './useAskAI'
 import SelectionAskAI from './SelectionAskAI'
+import AIResponse from './AIResponse'
 import './EpubReader.css'
 
 export default function EpubReader() {
@@ -22,18 +24,29 @@ export default function EpubReader() {
   const { selected, prev: ctxPrev, next: ctxNext, rect, clear } =
     useTextSelection(rendition)
 
-  // 선택 → AI에 보낼 payload 조립 (system_prompt_v3 / backend_design ③ 계약).
-  // 이번 조각은 stub — 실제 호출은 M4에서 services/ai.askAI로 교체.
+  // AI 풀이: 호출은 useMutation(askAI), 시트 열림+앵커 문장은 로컬 state.
+  // 선택은 clear()로 사라지므로 호출 시점의 selected를 스냅샷해 앵커로 쓴다.
+  const askAi = useAskAI()
+  const [askedSentence, setAskedSentence] = useState(null) // null=닫힘 / string=열림
+
+  // 선택 → AI payload 조립(system_prompt_v3 / backend_design ③ 계약) → 호출 + 시트 열기.
+  // 배열 순서 계약: prev=[Previous 2, Previous 1], next=[Next 1, Next 2] (서버 buildUserMessage와 일치).
   const handleAskAI = () => {
-    const payload = {
+    setAskedSentence(selected)
+    askAi.mutate({
       bookInfo: { title: book?.title ?? '', author: book?.author ?? '' },
       prev: ctxPrev,
       selected,
       next: ctxNext,
-    }
-    console.log('[askAI payload]', payload) // TODO: M4 — services/ai.askAI(payload)
+    })
     clear()
   }
+
+  const closeSheet = () => {
+    setAskedSentence(null)
+    askAi.reset()
+  }
+  const retryAskAI = () => askAi.mutate(askAi.variables) // 마지막 payload 재호출
 
   // 키보드 좌우 화살표 쪽넘김
   useEffect(() => {
@@ -84,6 +97,15 @@ export default function EpubReader() {
       </div>
 
       {selected && rect && <SelectionAskAI rect={rect} onAskAI={handleAskAI} />}
+
+      {askedSentence != null && (
+        <AIResponse
+          sentence={askedSentence}
+          mutation={askAi}
+          onRetry={retryAskAI}
+          onClose={closeSheet}
+        />
+      )}
 
       {(isPending || status === 'loading') && (
         <div className="reader__loading">불러오는 중…</div>
