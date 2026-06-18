@@ -14,6 +14,7 @@ import { getEpub } from '../../lib/indexeddb'
 // (paginated는 섹션 전체를 가로로 깔고 scrollLeft로 넘기므로, clientX에서 scrollLeft를 빼 페이지 기준으로 변환.)
 export function useReader(viewerRef, bookMeta, { onCenterTap } = {}) {
   const [status, setStatus] = useState('loading')
+  const [rendition, setRendition] = useState(null) // 선택 훅에 넘길 인스턴스(v1 방식)
   const bookRef = useRef(null)
   const renditionRef = useRef(null)
 
@@ -65,6 +66,7 @@ export function useReader(viewerRef, bookMeta, { onCenterTap } = {}) {
           allowScriptedContent: true, // 책 내용 스크립트 허용 — 없으면 sandbox가 막아 빈 페이지
         })
         renditionRef.current = rendition
+        setRendition(rendition) // 선택 훅이 'selected' 구독하도록 노출
 
         // ③ 테마 — 세리프 + measure(~680px §4)는 body에서(v1 검증값). themes.default로 등록.
         rendition.themes.default({
@@ -103,7 +105,10 @@ export function useReader(viewerRef, bookMeta, { onCenterTap } = {}) {
         //    주의: paginated는 섹션 전체를 가로로 깔고 container.scrollLeft로 페이지를 넘긴다.
         //    e.clientX는 스크롤된 iframe 문서 좌표라 scrollLeft가 포함됨 → 빼서 "보이는 페이지" 기준으로 변환.
         //    (안 빼면 페이지가 넘어갈수록 clientX가 커져 항상 next로만 감.)
-        rendition.on('click', (e) => {
+        rendition.on('click', (e, contents) => {
+          // 텍스트 선택 중인 탭은 페이지를 넘기지 않음(선택 마무리 클릭과 충돌 방지).
+          const sel = contents?.window?.getSelection?.()
+          if (sel && !sel.isCollapsed && sel.toString().trim()) return
           const m = rendition.manager
           const pageWidth = m?.layout?.delta || viewerEl.clientWidth || 0
           if (!pageWidth) return
@@ -128,6 +133,7 @@ export function useReader(viewerRef, bookMeta, { onCenterTap } = {}) {
     // cleanup — 반드시 destroy(메모리). StrictMode 이중 마운트/소스 변경에도 안전.
     return () => {
       cancelled = true
+      setRendition(null)
       if (bookRef.current) {
         try {
           bookRef.current.destroy()
@@ -144,5 +150,5 @@ export function useReader(viewerRef, bookMeta, { onCenterTap } = {}) {
   const prev = useCallback(() => renditionRef.current?.prev(), [])
   const next = useCallback(() => renditionRef.current?.next(), [])
 
-  return { status, prev, next }
+  return { status, rendition, prev, next }
 }
