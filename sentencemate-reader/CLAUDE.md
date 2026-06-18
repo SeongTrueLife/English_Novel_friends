@@ -46,7 +46,8 @@ M7 플래시카드+통계 → M8 가입유도+PWA(출시 직전).
 - 작은 프롬프트는 슬라이스 안에서 데이터→화면 순서로. 슬라이스 끝마다 dev 서버 실행 검증 + 커밋.
 
 ## 현재 마일스톤
-→ **M3(리더) 진행 중** — sub-#1(렌더·쪽넘김·나가기) 완료, 다음 sub-#2(문장 선택→Ask AI 버튼). M0·M1·M2 완료.
+→ **M4(AI 연동) 진행 중** — sub-#1(Edge Function `ask-ai` 배포·검증) 완료. 다음 sub-#2(클라 `services/ai.askAI` 연결 + 응답 시트), sub-#3(4축 렌더). M0~M3 완료.
+- 배포된 Gemini 모델 id: `gemini-3-flash-preview` (index.ts `MODEL` 상수).
 
 ## 알려진 이슈 (의도적 보류)
 - **SE(standardebooks) epub 빈 페이지** — epubjs가 SE의 SVG 타이틀페이지 폭을 과측정해 빈 페이지처럼 보임. **리더 코어·다른 epub은 정상**이고 데이터/아키텍처와 무관(useReader.js 렌더 설정 한 곳 문제). 별도 미니태스크로 수정 예정. 그전까지 **테스트는 SE 아닌 epub(Gutenberg 등)으로**.
