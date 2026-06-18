@@ -77,7 +77,8 @@ export async function saveGrammarCard({
 // 카드 목록 조회. 옵션 필터(book_id/kind), created_at 최신순. RLS cards_select_own이 본인 행만 격리.
 // 인덱스 cards_user_book_created_idx (user_id, book_id, created_at DESC)와 정합.
 export async function getCards({ bookId, kind } = {}) {
-  let query = supabase.from('cards').select('*')
+  // books(title, author) 관계 조인 — 단어장이 책 제목으로 그룹핑. books RLS SELECT는 USING(true)라 조인 OK.
+  let query = supabase.from('cards').select('*, books(title, author)')
   if (bookId) query = query.eq('book_id', bookId)
   if (kind) query = query.eq('kind', kind)
   query = query.order('created_at', { ascending: false })

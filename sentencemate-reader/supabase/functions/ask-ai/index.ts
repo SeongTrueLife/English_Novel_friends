@@ -4,7 +4,7 @@
 //   JSON 검증 → 성공 시 카운트++ → v3 JSON 반환.
 // 시스템 프롬프트·responseSchema는 클라에 절대 노출 안 됨(B 전략 핵심).
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { corsHeaders, handleOptions, json } from "./cors.ts";
+import { handleOptions, json } from "./cors.ts";
 import {
   buildUserMessage,
   generationConfig,
@@ -146,15 +146,19 @@ Deno.serve(async (req: Request) => {
     userRequest?: string;
     history?: { role: "user" | "model"; text: string }[];
   };
-  if (!selected) return json(400, { error: "selected_required" });
+  // turn-1(history 빔)은 selected 필수, follow-up(history 있음)은 userRequest 필수.
+  if (history.length === 0) {
+    if (!selected) return json(400, { error: "selected_required" });
+  } else if (!userRequest) {
+    return json(400, { error: "user_request_required" });
+  }
 
-  const userMessage = buildUserMessage({
-    bookInfo,
-    prev,
-    selected,
-    next,
-    userRequest,
-  });
+  // turn-1: buildUserMessage가 마커 조립(서버 단일 출처). follow-up: 마커 재조립 생략,
+  //   userRequest(질문)를 그 턴의 user 텍스트로. 어느 쪽이든 userMessage로 echo 반환 →
+  //   클라가 history에 그대로 누적(M6 멀티턴).
+  const userMessage = history.length > 0
+    ? userRequest!
+    : buildUserMessage({ bookInfo, prev, selected, next, userRequest });
   // history(M6용, M4엔 보통 []) → 멀티턴 누적. 마지막에 이번 user 메시지.
   const contents = [
     ...history.map((h) => ({ role: h.role, parts: [{ text: h.text }] })),
@@ -189,9 +193,6 @@ Deno.serve(async (req: Request) => {
     console.error("ai_usage upsert failed:", String(e));
   }
 
-  // ⑧ v3 JSON 반환
-  return new Response(JSON.stringify(parsed), {
-    status: 200,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
+  // ⑧ v3 JSON + userMessage echo 반환 (M6: 클라가 history 누적용으로 그대로 보관).
+  return json(200, { answer: parsed, userMessage });
 });
