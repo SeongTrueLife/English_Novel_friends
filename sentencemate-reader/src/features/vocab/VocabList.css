@@ -1,10 +1,37 @@
 /* 단어장 (§6.3) — 보관함 목록. .screen / .state / .btn-accent / .skeleton 전역 재사용. */
+.vocab__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
 .vocab__title {
-  margin: 0 0 16px;
+  margin: 0;
   font-family: var(--font-serif);
   font-weight: 500;
   font-size: 24px;
   color: var(--text-primary);
+}
+
+/* 학습 모드 진입 (§6.4) */
+.vocab__study-btn {
+  flex: none;
+  padding: 8px 16px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.vocab__study-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 /* ── 탭바 (단어 / 문법) ── */

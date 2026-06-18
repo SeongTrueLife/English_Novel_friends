@@ -1,0 +1,286 @@
+/* 플래시카드 학습 (§6.4) — 범위 시트 + 카드 덱. .screen / .state / .btn-accent / .skeleton /
+   .vocab-tabs(VocabList.css) 전역·공유 재사용. 시트·카드·컨트롤·진행바만 여기서 정의. */
+
+/* ── 범위 시트 (StudyScopeSheet, 인라인 패널) ── */
+.study-scope__title {
+  margin: 0 0 16px;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 24px;
+  color: var(--text-primary);
+}
+
+.scope-presets {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.scope-preset {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.scope-preset--active {
+  border-color: var(--accent-line);
+  background: var(--accent-soft-bg);
+  color: var(--accent);
+}
+
+.scope-preset:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.scope-preset__count {
+  flex: none;
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.scope-preset--active .scope-preset__count {
+  color: var(--accent);
+}
+
+/* 챕터 칩 */
+.scope-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 2px 2px;
+}
+
+.scope-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.scope-chip--active {
+  color: var(--accent);
+  background: var(--accent-soft-bg);
+  border-color: var(--accent-line);
+}
+
+.scope-chip__count {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.scope-shuffle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.scope-shuffle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+.scope-start {
+  display: block;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.scope-start:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* ── 카드 덱 ── */
+.study-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.study-deck__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.study-deck__scope,
+.study-deck__shuffle {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.study-deck__shuffle {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+/* 카드 — 탭하면 뒤집힘 */
+.flash-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  width: 100%;
+  min-height: 320px;
+  padding: 28px 24px 20px;
+  text-align: left;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.06));
+  cursor: pointer;
+}
+
+.flash-card__face {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.flash-card__face--back {
+  justify-content: flex-start;
+}
+
+.flash-card__term {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.flash-card__example {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  padding-left: 12px;
+  border-left: 2px solid var(--accent-line);
+}
+
+.flash-card__underline {
+  text-decoration: none;
+  font-weight: 600;
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent-line);
+}
+
+.flash-card__meaning {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.flash-card__explanation {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+.flash-card__guide {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--accent);
+  background: var(--accent-soft-bg);
+  border-radius: var(--radius-sm);
+}
+
+.flash-card__arrow {
+  flex: none;
+  font-weight: 600;
+}
+
+.flash-card__hint {
+  align-self: center;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+/* 진행바 */
+.study-progress {
+  height: 4px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.study-progress__bar {
+  height: 100%;
+  background: var(--accent-line);
+  transition: width 0.2s ease;
+}
+
+/* 컨트롤 (이전 / n·total / 다음) */
+.study-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.study-nav {
+  flex: 1;
+  padding: 12px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.study-nav:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.study-counter {
+  flex: none;
+  min-width: 64px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.flash-card-skeleton {
+  min-height: 320px;
+  border-radius: var(--radius-lg);
+}

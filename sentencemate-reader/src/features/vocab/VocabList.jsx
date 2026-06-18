@@ -1,7 +1,7 @@
 // 단어장 (frontend_plan §6.3) — 저장한 카드를 단어/문법 탭 · 책별 그룹으로 보는 보관함.
 // 데이터 접근은 useCards/useDeleteCard(→services/cards)만 경유(불변규칙 2·3). 상태 UI는 §6.8.
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCards, useDeleteCard } from './useCards'
 import ThinkingCard from '../reader/ThinkingCard'
 import Markdown from '../reader/Markdown'
@@ -13,7 +13,10 @@ export default function VocabList() {
   const tab = params.get('tab') === 'grammar' ? 'grammar' : 'word'
   const setTab = (t) => setParams(t === 'word' ? {} : { tab: t }, { replace: true })
 
+  const navigate = useNavigate()
   const { data: rows, isPending, isError, refetch } = useCards(tab)
+  // 학습 모드로 현재 탭 kind 전달(§6.3↔6.4). 카드 없으면 비활성(빈 학습 진입 차단).
+  const hasCards = rows && rows.length > 0
 
   let body
   if (isPending) {
@@ -38,7 +41,17 @@ export default function VocabList() {
 
   return (
     <main className="screen vocab">
-      <h1 className="vocab__title">단어장</h1>
+      <div className="vocab__head">
+        <h1 className="vocab__title">단어장</h1>
+        <button
+          type="button"
+          className="vocab__study-btn"
+          onClick={() => navigate(`/vocab/study?kind=${tab}`)}
+          disabled={!hasCards}
+        >
+          학습 시작
+        </button>
+      </div>
       <VocabTabs tab={tab} onTab={setTab} />
       {body}
     </main>
