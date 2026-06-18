@@ -123,4 +123,8 @@ export function useReadingSession(rendition, bookId) {
       finish()
     }
   }, [rendition, bookId, queryClient])
+
+  // 현재 챕터 노출 — 카드 ⊕ 저장 시 chapter 첨부용(§6.2). relocated가 매 쪽넘김마다 갱신하는
+  // lastChapterRef를 그대로 읽는다(첫 display부터 채워짐, 매칭 실패 시 null).
+  return { getCurrentChapter: () => lastChapterRef.current }
 }

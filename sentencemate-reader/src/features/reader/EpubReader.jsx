@@ -31,7 +31,8 @@ export default function EpubReader() {
   })
 
   // 진척 저장 + reading_sessions 수명주기(M6 #2). rendition 준비되면 배선.
-  useReadingSession(rendition, bookId)
+  // getCurrentChapter: ⊕ 카드 저장 시 현재 챕터를 첨부하기 위해 노출(§6.2).
+  const { getCurrentChapter } = useReadingSession(rendition, bookId)
   const { selected, prev: ctxPrev, next: ctxNext, rect, clear } =
     useTextSelection(rendition)
 
@@ -39,6 +40,7 @@ export default function EpubReader() {
   // 선택은 clear()로 사라지므로 호출 시점의 selected를 스냅샷해 앵커로 쓴다.
   const conversation = useConversation()
   const [askedSentence, setAskedSentence] = useState(null) // null=닫힘 / string=열림
+  const [askedChapter, setAskedChapter] = useState(null) // ask 시점 챕터 스냅샷(카드 chapter용)
   const [toast, setToast] = useState(null) // 저장 실패 등 예외 알림(§6.2, 실패만)
 
   // 선택 → AI payload 조립(system_prompt_v3 / backend_design ③ 계약) → turn1 호출 + 시트 열기.
@@ -46,6 +48,7 @@ export default function EpubReader() {
   // 다른 문장에서 다시 누르면 start()가 대화를 reset → 새 세션(휘발성).
   const handleAskAI = () => {
     setAskedSentence(selected)
+    setAskedChapter(getCurrentChapter()) // 선택처럼 ask 시점 챕터를 스냅샷(앵커 문장과 정합)
     conversation.start({
       bookInfo: { title: book?.title ?? '', author: book?.author ?? '' },
       prev: ctxPrev,
@@ -57,6 +60,7 @@ export default function EpubReader() {
 
   const closeSheet = () => {
     setAskedSentence(null)
+    setAskedChapter(null)
     conversation.reset()
   }
 
@@ -113,6 +117,7 @@ export default function EpubReader() {
       {askedSentence != null && (
         <AIResponse
           sentence={askedSentence}
+          chapter={askedChapter}
           bookId={bookId}
           messages={conversation.messages}
           isPending={conversation.isPending}

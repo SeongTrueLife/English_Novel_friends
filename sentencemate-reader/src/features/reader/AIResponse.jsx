@@ -27,6 +27,7 @@ const ERROR_MAP = {
 
 export default function AIResponse({
   sentence,
+  chapter,
   bookId,
   messages,
   isPending,
@@ -76,6 +77,7 @@ export default function AIResponse({
               data={m.answer}
               bookId={bookId}
               exampleSentence={sentence}
+              chapter={chapter}
               onSaveError={onSaveError}
             />
           ),
@@ -101,9 +103,9 @@ export default function AIResponse({
 }
 
 // v3 JSON → 4축 구조화 (§6.2 슬롯→UI). 빈 배열 섹션은 통째로 숨김.
-// 저장 배선: bookId·exampleSentence(=앵커 원문, 불변규칙 5)·onSaveError를 학습 항목에 내려보낸다.
-// chapter는 이번엔 null(현재 챕터 추적은 M6 슬라이스 #2) — nullable라 OK.
-function ResponseBody({ data, bookId, exampleSentence, onSaveError }) {
+// 저장 배선: bookId·exampleSentence(=앵커 원문, 불변규칙 5)·chapter(ask 시점 현재 챕터)·onSaveError를
+// 학습 항목에 내려보낸다. chapter는 TOC 매칭 실패 시 null(nullable라 OK).
+function ResponseBody({ data, bookId, exampleSentence, chapter, onSaveError }) {
   const vocab = data.vocab ?? []
   const grammar = data.grammar ?? []
   const sentenceThinking = data.sentence_thinking ?? []
@@ -121,7 +123,7 @@ function ResponseBody({ data, bookId, exampleSentence, onSaveError }) {
               thinking={v.thinking}
               bookId={bookId}
               exampleSentence={exampleSentence}
-              chapter={null}
+              chapter={chapter}
               onSaveError={onSaveError}
             />
           ))}
@@ -139,7 +141,7 @@ function ResponseBody({ data, bookId, exampleSentence, onSaveError }) {
               interpretation_guide={g.interpretation_guide}
               bookId={bookId}
               exampleSentence={exampleSentence}
-              chapter={null}
+              chapter={chapter}
               onSaveError={onSaveError}
             />
           ))}
