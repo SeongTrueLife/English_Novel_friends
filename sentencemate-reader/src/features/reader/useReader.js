@@ -6,13 +6,14 @@ import { getEpub } from '../../lib/indexeddb'
 // 핵심: rendition은 cleanup에서 반드시 destroy(메모리 누수 방지).
 // epub 파일 접근은 lib/indexeddb의 getEpub만 경유(불변규칙). curated는 공개 URL(backend_design ④).
 //
-// 시그니처: useReader(viewerRef, bookMeta, { onCenterTap }) → { status, prev, next }
+// 시그니처: useReader(viewerRef, bookMeta, { onCenterTap, startCfi }) → { status, prev, next }
 //   status: 'loading' | 'ready' | 'missing' | 'error'
 //   'missing' = user_upload인데 이 단말기 IndexedDB에 파일 없음(다른 단말기) → 재업로드 안내.
+//   startCfi: 이어 읽기 복원 위치(user_books.progress_cfi, M6 #2). 없으면 처음부터.
 //
 // 탭존(§6.2): rendition click의 "보이는 페이지" x좌표를 3등분 — 좌 prev / 우 next / 가운데 onCenterTap.
 // (paginated는 섹션 전체를 가로로 깔고 scrollLeft로 넘기므로, clientX에서 scrollLeft를 빼 페이지 기준으로 변환.)
-export function useReader(viewerRef, bookMeta, { onCenterTap } = {}) {
+export function useReader(viewerRef, bookMeta, { onCenterTap, startCfi } = {}) {
   const [status, setStatus] = useState('loading')
   const [rendition, setRendition] = useState(null) // 선택 훅에 넘길 인스턴스(v1 방식)
   const bookRef = useRef(null)
@@ -22,6 +23,13 @@ export function useReader(viewerRef, bookMeta, { onCenterTap } = {}) {
   const onCenterTapRef = useRef(onCenterTap)
   useEffect(() => {
     onCenterTapRef.current = onCenterTap
+  })
+
+  // 복원 CFI도 ref로 캡처 — display는 init에서 1회만 읽고, startCfi 변동으로 책을 재로드하지 않게
+  //   (EpubReader가 progress settle 후에만 book을 넘기므로 init 시점엔 이미 확정값).
+  const startCfiRef = useRef(startCfi)
+  useEffect(() => {
+    startCfiRef.current = startCfi
   })
 
   const bookId = bookMeta?.book_id
@@ -119,7 +127,7 @@ export function useReader(viewerRef, bookMeta, { onCenterTap } = {}) {
           else onCenterTapRef.current?.()
         })
 
-        await rendition.display() // CFI 복원은 M6 — 인자 없이 처음부터
+        await rendition.display(startCfiRef.current || undefined) // 이어 읽기 복원(없으면 처음부터)
         if (cancelled) return
         setStatus('ready')
       } catch (err) {

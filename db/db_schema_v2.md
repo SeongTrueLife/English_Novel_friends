@@ -237,6 +237,7 @@ word kind에선 NOT NULL (빈 배열 `[]`이라도). grammar kind에선 NULL.
 1. reading_sessions에 `last_activity_at timestamptz NOT NULL DEFAULT now()` 컬럼 추가
 2. 사용자 활동(페이지 넘김, 카드 추가) 때마다 클라이언트가 last_activity_at 갱신
 3. 탭 닫힘/visibility 변경 시 ended_at = last_activity_at으로 마감 시도 (best effort)
+   - **구현 refinement (M6, 2026-06-19)**: `visibility hidden`은 마감이 아니라 **touch(last_activity_at만 갱신)** 로 처리 — 탭 전환·알림으로 잠깐 hidden 후 복귀 시 세션이 조기 마감되는 '부활 버그' 회피. 실제 마감은 **pagehide/언마운트**(종착 신호) + 4번(다음 세션 시작 시 자동 정리)이 담당. 모바일이 백그라운드에서 탭을 폐기해 pagehide가 안 떠도, 4번이 hidden 때 갱신된 last_activity_at으로 정확히 마감.
 4. 새 세션 시작 시 이전 미종료 세션 있으면 ended_at = last_activity_at으로 자동 마감
 
 이러면 정상 종료는 즉시 마감, 비정상 종료는 다음 세션 시작 시 정리, 영원히 안 돌아오는 사용자는 ended_at = NULL 유지 (데이터 손실 아님).

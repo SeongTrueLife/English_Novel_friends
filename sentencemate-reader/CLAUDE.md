@@ -46,9 +46,10 @@ M7 플래시카드+통계 → M8 가입유도+PWA(출시 직전).
 - 작은 프롬프트는 슬라이스 안에서 데이터→화면 순서로. 슬라이스 끝마다 dev 서버 실행 검증 + 커밋.
 
 ## 현재 마일스톤
-→ **M5 완료 — 핵심 루프 완주(분수령).** 책→선택→AI→⊕저장→단어장이 실제로 돈다 = MVP 동작.
-- 완료: M0(토대)·M1(DB)·M2(라이브러리/책추가)·M3(리더/선택)·M4(AI 4축 렌더)·M5(카드저장/단어장).
-- 다음: **M6**(follow-up 멀티턴 + CFI 진척 + reading_sessions) → M7(플래시카드 + 통계) → M8(가입유도 + PWA + 출시).
+→ **M6 완료.** 핵심 루프 + follow-up 멀티턴 + 이어읽기(CFI 복원/진척) + reading_sessions까지 동작.
+- 완료: M0~M5(핵심 루프) · M6(follow-up Option A + 읽기 진척·세션).
+- 다음: **M7**(플래시카드 학습 + 통계 대시보드[카드 기반]) → M8(가입유도 + PWA + 출시 점검).
+- 진행률(pct)은 spine 위치 기반 근사값(useReadingSession) — 정확 % 필요 시 epubjs locations 견고화는 별도 태스크.
 - 배포된 Gemini 모델 id: `gemini-3-flash-preview` (index.ts `MODEL` 상수).
 
 ## 알려진 이슈 (의도적 보류)

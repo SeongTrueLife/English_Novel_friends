@@ -4,7 +4,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBook } from './useBook'
+import { useReadingProgress } from './useReadingProgress'
 import { useReader } from './useReader'
+import { useReadingSession } from './useReadingSession'
 import { useTextSelection } from './useTextSelection'
 import { useConversation } from './useConversation'
 import SelectionAskAI from './SelectionAskAI'
@@ -19,9 +21,17 @@ export default function EpubReader() {
   const [showControls, setShowControls] = useState(false)
 
   const { data: book, isPending, isError } = useBook(bookId)
-  const { status, rendition, prev, next } = useReader(viewerRef, book, {
+  // 이어 읽기: progress 쿼리가 settle(data 또는 null)된 뒤에만 book을 넘겨 useReader를 init
+  //   → startCfi가 확정된 1회 display로 복원(재init 레이스 방지).
+  const { data: progress, isPending: progressPending } = useReadingProgress(bookId)
+  const readerBook = book && !progressPending ? book : null
+  const { status, rendition, prev, next } = useReader(viewerRef, readerBook, {
     onCenterTap: () => setShowControls((v) => !v),
+    startCfi: progress?.progress_cfi,
   })
+
+  // 진척 저장 + reading_sessions 수명주기(M6 #2). rendition 준비되면 배선.
+  useReadingSession(rendition, bookId)
   const { selected, prev: ctxPrev, next: ctxNext, rect, clear } =
     useTextSelection(rendition)
 

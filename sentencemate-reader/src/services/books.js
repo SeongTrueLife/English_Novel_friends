@@ -90,14 +90,28 @@ export async function removeFromLibrary(bookId) {
 }
 
 // 읽기 진척도 갱신. updated_at은 moddatetime 트리거가 자동 → 여기선 안 넣음.
+// pct는 null/undefined면 키 자체를 생략 → 직전 값 보존(epubjs locations 준비 전 CFI-only 저장이
+//   pct를 NULL로 덮어쓰지 않게). cfi·last_opened_at은 항상 갱신.
 export async function updateProgress(bookId, { cfi, pct }) {
+  const patch = {
+    progress_cfi: cfi,
+    last_opened_at: new Date().toISOString(),
+  }
+  if (pct != null) patch.progress_pct = pct
   const { error } = await supabase
     .from('user_books')
-    .update({
-      progress_cfi: cfi,
-      progress_pct: pct,
-      last_opened_at: new Date().toISOString(),
-    })
+    .update(patch)
     .eq('book_id', bookId)
   if (error) throw error
+}
+
+// 이어 읽기용 진척 조회(이 책 user_books 행). RLS가 본인 행만 → book_id만으로 단건.
+export async function getReadingProgress(bookId) {
+  const { data, error } = await supabase
+    .from('user_books')
+    .select('progress_cfi, progress_pct')
+    .eq('book_id', bookId)
+    .maybeSingle()
+  if (error) throw error
+  return data // { progress_cfi, progress_pct } | null
 }
