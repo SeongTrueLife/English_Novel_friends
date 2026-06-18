@@ -74,6 +74,30 @@
   padding: 16px;
 }
 
+/* ── 대화 스레드 (M6 follow-up 누적) ── */
+/* 턴(model 응답) 사이 구분선 — 두 번째 턴부터 위에 경계 + 여백. */
+.airesponse__turn + .airesponse__turn,
+.airesponse__question + .airesponse__turn {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+/* follow-up 질문 버블 — 오른쪽 정렬(채팅에서 '내가 보낸 말'). */
+.airesponse__question {
+  margin: 18px 0 0;
+  margin-left: auto;
+  max-width: 85%;
+  width: fit-content;
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--accent-soft-bg);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-md);
+}
+
 /* ── 구조화 렌더 (§6.2 슬롯→UI) ── */
 .airesponse__section + .airesponse__section {
   margin-top: 22px;
@@ -328,4 +352,54 @@
   font-size: 15px;
   line-height: 1.6;
   color: var(--text-primary);
+}
+
+/* ── 더 물어보기 입력 (§6.2 하단 고정, 채팅 스크롤 밖) ── */
+/* 자연 해석 토글 아래에 올 때 간격. */
+.natural-translation + .followup {
+  margin-top: 10px;
+}
+
+.followup {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.followup__input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 12px;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.followup__input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.followup__input:disabled {
+  opacity: 0.6;
+}
+
+.followup__send {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--bg-primary);
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.followup__send:disabled {
+  background: var(--border-strong);
+  cursor: default;
 }

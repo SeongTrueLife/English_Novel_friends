@@ -54,5 +54,8 @@ export async function askAI({
     throw new AIError('network', null)
   }
 
-  return data // v3 JSON { vocab, grammar, sentence_thinking, naturalTranslation }
+  // 서버 반환: { answer: v3 JSON, userMessage }.
+  // answer = { vocab, grammar, sentence_thinking, naturalTranslation }.
+  // userMessage = 서버가 조립한 이번 턴 user 텍스트(클라가 history 누적용으로 그대로 echo, M6).
+  return data // { answer, userMessage }
 }

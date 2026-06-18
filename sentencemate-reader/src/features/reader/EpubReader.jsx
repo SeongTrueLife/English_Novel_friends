@@ -6,7 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useBook } from './useBook'
 import { useReader } from './useReader'
 import { useTextSelection } from './useTextSelection'
-import { useAskAI } from './useAskAI'
+import { useConversation } from './useConversation'
 import SelectionAskAI from './SelectionAskAI'
 import AIResponse from './AIResponse'
 import Toast from '../../components/ui/Toast'
@@ -25,17 +25,18 @@ export default function EpubReader() {
   const { selected, prev: ctxPrev, next: ctxNext, rect, clear } =
     useTextSelection(rendition)
 
-  // AI 풀이: 호출은 useMutation(askAI), 시트 열림+앵커 문장은 로컬 state.
+  // AI 풀이: follow-up 멀티턴 대화는 useConversation, 시트 열림+앵커 문장은 로컬 state.
   // 선택은 clear()로 사라지므로 호출 시점의 selected를 스냅샷해 앵커로 쓴다.
-  const askAi = useAskAI()
+  const conversation = useConversation()
   const [askedSentence, setAskedSentence] = useState(null) // null=닫힘 / string=열림
   const [toast, setToast] = useState(null) // 저장 실패 등 예외 알림(§6.2, 실패만)
 
-  // 선택 → AI payload 조립(system_prompt_v3 / backend_design ③ 계약) → 호출 + 시트 열기.
+  // 선택 → AI payload 조립(system_prompt_v3 / backend_design ③ 계약) → turn1 호출 + 시트 열기.
   // 배열 순서 계약: prev=[Previous 2, Previous 1], next=[Next 1, Next 2] (서버 buildUserMessage와 일치).
+  // 다른 문장에서 다시 누르면 start()가 대화를 reset → 새 세션(휘발성).
   const handleAskAI = () => {
     setAskedSentence(selected)
-    askAi.mutate({
+    conversation.start({
       bookInfo: { title: book?.title ?? '', author: book?.author ?? '' },
       prev: ctxPrev,
       selected,
@@ -46,9 +47,8 @@ export default function EpubReader() {
 
   const closeSheet = () => {
     setAskedSentence(null)
-    askAi.reset()
+    conversation.reset()
   }
-  const retryAskAI = () => askAi.mutate(askAi.variables) // 마지막 payload 재호출
 
   // 키보드 좌우 화살표 쪽넘김
   useEffect(() => {
@@ -104,8 +104,12 @@ export default function EpubReader() {
         <AIResponse
           sentence={askedSentence}
           bookId={bookId}
-          mutation={askAi}
-          onRetry={retryAskAI}
+          messages={conversation.messages}
+          isPending={conversation.isPending}
+          isError={conversation.isError}
+          error={conversation.error}
+          onRetry={conversation.retry}
+          onFollowUp={conversation.followUp}
           onClose={closeSheet}
           onSaveError={() => setToast('저장 실패 · 다시')}
         />

@@ -1,11 +1,13 @@
 // AI 풀이 표면 (frontend_plan §6.2) — 세로=바텀시트 / 가로=사이드패널, 3구역.
-// 중앙: vocab/grammar/sentence_thinking 구조화 렌더(빈 슬롯 섹션째 숨김). 하단: naturalTranslation 토글(접힘).
+// 중앙: 대화 스레드(turn1 4축 응답 + follow-up 질문·응답 누적, 채팅처럼). 빈 슬롯 섹션째 숨김.
 // 본문 위 '막는' 모달이 아니라 '도킹된 패널'(backdrop 없음) — 원문↔풀이 대조를 위해 책이 계속 보이고 조작 가능(§6.2). 닫기는 ✕.
-// 카드 저장 ⊕은 M5, follow-up 입력은 M6.
+// 하단 고정: 자연 해석 토글(turn1만) + "더 물어보기" 입력. 둘 다 스크롤 밖이라 누적돼도 위치 불변.
+// 멀티턴 응답은 휘발성(DB 미저장). 카드 저장 ⊕은 M5(모든 턴에서 동작).
 import VocabItem from './VocabItem'
 import GrammarItem from './GrammarItem'
 import ThinkingCard from './ThinkingCard'
 import NaturalTranslation from './NaturalTranslation'
+import FollowUp from './FollowUp'
 import './AIResponse.css'
 
 // 에러 코드 → 사람 말투 메시지 + 재시도 여부 (§6.8, 사용자 탓 금지).
@@ -26,12 +28,18 @@ const ERROR_MAP = {
 export default function AIResponse({
   sentence,
   bookId,
-  mutation,
+  messages,
+  isPending,
+  isError,
+  error,
   onRetry,
   onClose,
+  onFollowUp,
   onSaveError,
 }) {
-  const { isPending, isError, error, data } = mutation
+  // 자연 해석은 turn-1 응답 것만(follow-up마다 같은 문장 재번역은 노이즈 → 무시).
+  const firstAnswer = messages.find((m) => m.role === 'model')?.answer
+  const hasAnswer = messages.some((m) => m.role === 'model')
 
   return (
     <aside
@@ -53,24 +61,39 @@ export default function AIResponse({
         </button>
       </header>
 
-      {/* 중앙 스크롤 — 상태별 */}
+      {/* 중앙 스크롤 — 대화 스레드 + 끝에 진행/에러 상태 */}
       <div className="airesponse__body">
+        {messages.map((m, i) =>
+          m.role === 'user' ? (
+            m.display && (
+              <p key={i} className="airesponse__question">
+                {m.display}
+              </p>
+            )
+          ) : (
+            <ResponseBody
+              key={i}
+              data={m.answer}
+              bookId={bookId}
+              exampleSentence={sentence}
+              onSaveError={onSaveError}
+            />
+          ),
+        )}
+
         {isPending && <LoadingSkeleton />}
-        {isError && <ErrorView code={error?.code} onRetry={onRetry} />}
-        {!isPending && !isError && data && (
-          <ResponseBody
-            data={data}
-            bookId={bookId}
-            exampleSentence={sentence}
-            onSaveError={onSaveError}
-          />
+        {!isPending && isError && (
+          <ErrorView code={error?.code} onRetry={onRetry} />
         )}
       </div>
 
-      {/* 하단 고정 — 자연 해석 토글(기본 접힘). follow-up 입력은 M6. */}
-      {!isPending && !isError && data?.naturalTranslation && (
+      {/* 하단 고정 — 자연 해석 토글(turn1) + 더 물어보기 입력. 둘 다 채팅 스크롤 밖. */}
+      {hasAnswer && (
         <footer className="airesponse__foot">
-          <NaturalTranslation text={data.naturalTranslation} />
+          {firstAnswer?.naturalTranslation && (
+            <NaturalTranslation text={firstAnswer.naturalTranslation} />
+          )}
+          <FollowUp onSend={onFollowUp} disabled={isPending} />
         </footer>
       )}
     </aside>
@@ -79,14 +102,14 @@ export default function AIResponse({
 
 // v3 JSON → 4축 구조화 (§6.2 슬롯→UI). 빈 배열 섹션은 통째로 숨김.
 // 저장 배선: bookId·exampleSentence(=앵커 원문, 불변규칙 5)·onSaveError를 학습 항목에 내려보낸다.
-// chapter는 이번엔 null(현재 챕터 추적은 M6) — nullable라 OK.
+// chapter는 이번엔 null(현재 챕터 추적은 M6 슬라이스 #2) — nullable라 OK.
 function ResponseBody({ data, bookId, exampleSentence, onSaveError }) {
   const vocab = data.vocab ?? []
   const grammar = data.grammar ?? []
   const sentenceThinking = data.sentence_thinking ?? []
 
   return (
-    <>
+    <div className="airesponse__turn">
       {vocab.length > 0 && (
         <section className="airesponse__section">
           <h3 className="airesponse__section-title">단어</h3>
@@ -131,7 +154,7 @@ function ResponseBody({ data, bookId, exampleSentence, onSaveError }) {
           ))}
         </section>
       )}
-    </>
+    </div>
   )
 }
 
