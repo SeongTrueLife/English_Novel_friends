@@ -23,7 +23,14 @@ const ERROR_MAP = {
   unknown: { text: '문제가 생겼어요 · 다시 시도해 주세요', retry: true },
 }
 
-export default function AIResponse({ sentence, mutation, onRetry, onClose }) {
+export default function AIResponse({
+  sentence,
+  bookId,
+  mutation,
+  onRetry,
+  onClose,
+  onSaveError,
+}) {
   const { isPending, isError, error, data } = mutation
 
   return (
@@ -50,7 +57,14 @@ export default function AIResponse({ sentence, mutation, onRetry, onClose }) {
       <div className="airesponse__body">
         {isPending && <LoadingSkeleton />}
         {isError && <ErrorView code={error?.code} onRetry={onRetry} />}
-        {!isPending && !isError && data && <ResponseBody data={data} />}
+        {!isPending && !isError && data && (
+          <ResponseBody
+            data={data}
+            bookId={bookId}
+            exampleSentence={sentence}
+            onSaveError={onSaveError}
+          />
+        )}
       </div>
 
       {/* 하단 고정 — 자연 해석 토글(기본 접힘). follow-up 입력은 M6. */}
@@ -64,7 +78,9 @@ export default function AIResponse({ sentence, mutation, onRetry, onClose }) {
 }
 
 // v3 JSON → 4축 구조화 (§6.2 슬롯→UI). 빈 배열 섹션은 통째로 숨김.
-function ResponseBody({ data }) {
+// 저장 배선: bookId·exampleSentence(=앵커 원문, 불변규칙 5)·onSaveError를 학습 항목에 내려보낸다.
+// chapter는 이번엔 null(현재 챕터 추적은 M6) — nullable라 OK.
+function ResponseBody({ data, bookId, exampleSentence, onSaveError }) {
   const vocab = data.vocab ?? []
   const grammar = data.grammar ?? []
   const sentenceThinking = data.sentence_thinking ?? []
@@ -80,6 +96,10 @@ function ResponseBody({ data }) {
               word={v.word}
               meaning={v.meaning}
               thinking={v.thinking}
+              bookId={bookId}
+              exampleSentence={exampleSentence}
+              chapter={null}
+              onSaveError={onSaveError}
             />
           ))}
         </section>
@@ -94,6 +114,10 @@ function ResponseBody({ data }) {
               pattern={g.pattern}
               explanation={g.explanation}
               interpretation_guide={g.interpretation_guide}
+              bookId={bookId}
+              exampleSentence={exampleSentence}
+              chapter={null}
+              onSaveError={onSaveError}
             />
           ))}
         </section>

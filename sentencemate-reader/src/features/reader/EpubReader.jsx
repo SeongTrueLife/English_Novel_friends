@@ -9,6 +9,7 @@ import { useTextSelection } from './useTextSelection'
 import { useAskAI } from './useAskAI'
 import SelectionAskAI from './SelectionAskAI'
 import AIResponse from './AIResponse'
+import Toast from '../../components/ui/Toast'
 import './EpubReader.css'
 
 export default function EpubReader() {
@@ -28,6 +29,7 @@ export default function EpubReader() {
   // 선택은 clear()로 사라지므로 호출 시점의 selected를 스냅샷해 앵커로 쓴다.
   const askAi = useAskAI()
   const [askedSentence, setAskedSentence] = useState(null) // null=닫힘 / string=열림
+  const [toast, setToast] = useState(null) // 저장 실패 등 예외 알림(§6.2, 실패만)
 
   // 선택 → AI payload 조립(system_prompt_v3 / backend_design ③ 계약) → 호출 + 시트 열기.
   // 배열 순서 계약: prev=[Previous 2, Previous 1], next=[Next 1, Next 2] (서버 buildUserMessage와 일치).
@@ -101,11 +103,15 @@ export default function EpubReader() {
       {askedSentence != null && (
         <AIResponse
           sentence={askedSentence}
+          bookId={bookId}
           mutation={askAi}
           onRetry={retryAskAI}
           onClose={closeSheet}
+          onSaveError={() => setToast('저장 실패 · 다시')}
         />
       )}
+
+      {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
 
       {(isPending || status === 'loading') && (
         <div className="reader__loading">불러오는 중…</div>

@@ -102,6 +102,37 @@
   margin-top: 14px;
 }
 
+.vocab-item,
+.grammar-item {
+  position: relative; /* 우상단 ⊕ 저장 버튼 기준 */
+}
+
+/* ⊕ 저장 버튼 (§6.2) — 항목 우상단. 누르면 ✓(악센트색)·비활성으로 잠금(중복 재저장 차단). */
+.item-save {
+  position: absolute;
+  top: -2px;
+  right: 0;
+  width: 26px;
+  height: 26px;
+  font-size: 17px;
+  line-height: 1;
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+
+.item-save:disabled {
+  color: var(--accent);
+  cursor: default;
+}
+
+/* 제목이 버튼과 안 겹치게 우측 여백 확보 */
+.vocab-item__word,
+.grammar-item__pattern {
+  padding-right: 30px;
+}
+
 .vocab-item__word {
   margin: 0;
   font-family: var(--font-serif);
