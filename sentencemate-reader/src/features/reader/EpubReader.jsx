@@ -1,6 +1,6 @@
 // 리더 화면 — /read/:bookId. epub.js로 책을 열어 읽고 쪽을 넘기고 '←'로 나간다.
-// 이 라우트에서 AppShell이 탭바를 숨긴다(몰입). 컨트롤은 이번 조각엔 '나가기'만(§6.2).
-// 문장 선택 → Ask AI payload 조립(이번 조각). 실제 AI 호출은 M4, CFI 저장·TOC·설정은 M6.
+// 이 라우트에서 AppShell이 탭바를 숨긴다(몰입). 컨트롤은 현재 '나가기'만(§6.2).
+// 문장 선택 → Ask AI → AIResponse 시트(M4 완료). CFI 저장·TOC·설정·진척은 M6.
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBook } from './useBook'

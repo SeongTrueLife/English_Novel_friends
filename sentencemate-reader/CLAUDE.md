@@ -46,7 +46,8 @@ M7 플래시카드+통계 → M8 가입유도+PWA(출시 직전).
 - 작은 프롬프트는 슬라이스 안에서 데이터→화면 순서로. 슬라이스 끝마다 dev 서버 실행 검증 + 커밋.
 
 ## 현재 마일스톤
-→ **M4(AI 연동) 진행 중** — sub-#1(Edge Function `ask-ai` 배포·검증) 완료. 다음 sub-#2(클라 `services/ai.askAI` 연결 + 응답 시트), sub-#3(4축 렌더). M0~M3 완료.
+→ **M5(카드 저장 + 단어장) 진행 예정 — 핵심 루프의 마지막 고리.** M0~M4 완료(선택→AI→4축 렌더까지 동작).
+- M5 분할: sub-#1 `services/cards.js` → sub-#2 `⊕` 낙관적 저장(AIResponse) → sub-#3 단어장 화면(VocabList).
 - 배포된 Gemini 모델 id: `gemini-3-flash-preview` (index.ts `MODEL` 상수).
 
 ## 알려진 이슈 (의도적 보류)

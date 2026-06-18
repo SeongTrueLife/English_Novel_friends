@@ -1,6 +1,11 @@
 // AI 풀이 표면 (frontend_plan §6.2) — 세로=바텀시트 / 가로=사이드패널, 3구역.
-// 이번 슬라이스는 골격: 중앙은 로딩 스켈레톤·에러·raw JSON까지. 4축 구조화 렌더는 sub-#3.
+// 중앙: vocab/grammar/sentence_thinking 구조화 렌더(빈 슬롯 섹션째 숨김). 하단: naturalTranslation 토글(접힘).
 // 본문 위 '막는' 모달이 아니라 '도킹된 패널'(backdrop 없음) — 원문↔풀이 대조를 위해 책이 계속 보이고 조작 가능(§6.2). 닫기는 ✕.
+// 카드 저장 ⊕은 M5, follow-up 입력은 M6.
+import VocabItem from './VocabItem'
+import GrammarItem from './GrammarItem'
+import ThinkingCard from './ThinkingCard'
+import NaturalTranslation from './NaturalTranslation'
 import './AIResponse.css'
 
 // 에러 코드 → 사람 말투 메시지 + 재시도 여부 (§6.8, 사용자 탓 금지).
@@ -45,19 +50,64 @@ export default function AIResponse({ sentence, mutation, onRetry, onClose }) {
       <div className="airesponse__body">
         {isPending && <LoadingSkeleton />}
         {isError && <ErrorView code={error?.code} onRetry={onRetry} />}
-        {!isPending && !isError && data && (
-          // 골격: 검증용 raw 표시. sub-#3에서 vocab/grammar/thinking/naturalTranslation 렌더로 교체.
-          <pre className="airesponse__raw">{JSON.stringify(data, null, 2)}</pre>
-        )}
+        {!isPending && !isError && data && <ResponseBody data={data} />}
       </div>
 
-      {/* 하단 고정 — 자리만(자연해석 토글·follow-up 입력은 sub-#3/M6) */}
-      <footer className="airesponse__foot">
-        <div className="airesponse__followup-stub" aria-hidden="true">
-          더 물어보기 (다음 단계)
-        </div>
-      </footer>
+      {/* 하단 고정 — 자연 해석 토글(기본 접힘). follow-up 입력은 M6. */}
+      {!isPending && !isError && data?.naturalTranslation && (
+        <footer className="airesponse__foot">
+          <NaturalTranslation text={data.naturalTranslation} />
+        </footer>
+      )}
     </aside>
+  )
+}
+
+// v3 JSON → 4축 구조화 (§6.2 슬롯→UI). 빈 배열 섹션은 통째로 숨김.
+function ResponseBody({ data }) {
+  const vocab = data.vocab ?? []
+  const grammar = data.grammar ?? []
+  const sentenceThinking = data.sentence_thinking ?? []
+
+  return (
+    <>
+      {vocab.length > 0 && (
+        <section className="airesponse__section">
+          <h3 className="airesponse__section-title">단어</h3>
+          {vocab.map((v, i) => (
+            <VocabItem
+              key={i}
+              word={v.word}
+              meaning={v.meaning}
+              thinking={v.thinking}
+            />
+          ))}
+        </section>
+      )}
+
+      {grammar.length > 0 && (
+        <section className="airesponse__section">
+          <h3 className="airesponse__section-title">문법</h3>
+          {grammar.map((g, i) => (
+            <GrammarItem
+              key={i}
+              pattern={g.pattern}
+              explanation={g.explanation}
+              interpretation_guide={g.interpretation_guide}
+            />
+          ))}
+        </section>
+      )}
+
+      {sentenceThinking.length > 0 && (
+        <section className="airesponse__section">
+          <h3 className="airesponse__section-title">문장 전체</h3>
+          {sentenceThinking.map((t, i) => (
+            <ThinkingCard key={i} type={t.type} title={t.title} body={t.body} />
+          ))}
+        </section>
+      )}
+    </>
   )
 }
 

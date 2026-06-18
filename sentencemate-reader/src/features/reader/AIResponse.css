@@ -74,15 +74,133 @@
   padding: 16px;
 }
 
-/* 골격 슬라이스: raw JSON */
-.airesponse__raw {
-  margin: 0;
+/* ── 구조화 렌더 (§6.2 슬롯→UI) ── */
+.airesponse__section + .airesponse__section {
+  margin-top: 22px;
+}
+
+.airesponse__section-title {
+  margin: 0 0 10px;
   font-family: var(--font-sans);
   font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text-tertiary);
+}
+
+/* 설명 중인 영어 조각(**굵게**) — 밑줄 + accent 강조 (§6.2). */
+.md-em {
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-line);
+  text-underline-offset: 2px;
+}
+
+/* 단어 카드 */
+.vocab-item + .vocab-item {
+  margin-top: 14px;
+}
+
+.vocab-item__word {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  color: var(--text-primary);
+}
+
+.vocab-item__meaning {
+  margin: 3px 0 0;
+  font-size: 14px;
   line-height: 1.5;
   color: var(--text-secondary);
-  white-space: pre-wrap;
-  word-break: break-word;
+}
+
+/* thinking — 한 단계 낮은 위계: 들여쓰고 틴트박스 */
+.vocab-item__thinking {
+  margin-top: 10px;
+  padding-left: 10px;
+  border-left: 2px solid var(--border-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.thinking-card {
+  padding: 10px 12px;
+  background: var(--accent-soft-bg);
+  border-radius: var(--radius-sm);
+}
+
+.thinking-card__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.thinking-card__type {
+  flex: none;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--bg-primary);
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+}
+
+.thinking-card__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.thinking-card__body {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* 문법 카드 */
+.grammar-item + .grammar-item {
+  margin-top: 14px;
+}
+
+.grammar-item__pattern {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.grammar-item__explanation {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+/* interpretation_guide — 강조 한 줄(틴트박스 + →) */
+.grammar-item__guide {
+  display: flex;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 9px 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-primary);
+  background: var(--accent-soft-bg);
+  border-radius: var(--radius-sm);
+}
+
+.grammar-item__arrow {
+  flex: none;
+  color: var(--accent);
+  font-weight: 700;
 }
 
 /* 로딩 — 카드 골격 스켈레톤 */
@@ -160,12 +278,23 @@
   border-top: 1px solid var(--border);
 }
 
-.airesponse__followup-stub {
-  padding: 10px 14px;
+/* 자연스러운 해석 — 토글(기본 접힘, 추론 보호 §6.2) */
+.natural-translation__toggle {
+  width: 100%;
+  padding: 9px 14px;
   font-size: 13px;
-  color: var(--text-tertiary);
-  text-align: center;
-  background: var(--bg-primary);
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--accent-soft-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.natural-translation__text {
+  margin: 10px 2px 0;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-primary);
 }
