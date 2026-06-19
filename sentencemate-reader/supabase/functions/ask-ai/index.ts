@@ -105,7 +105,7 @@ Deno.serve(async (req: Request) => {
   const preflight = handleOptions(req);
   if (preflight) return preflight;
   if (req.method !== "POST") {
-    return json(405, { error: "method_not_allowed" });
+    return json(req,405, { error: "method_not_allowed" });
   }
 
   // ② JWT 검증 — 익명 토큰도 통과, 없음/위조만 차단.
@@ -114,14 +114,14 @@ Deno.serve(async (req: Request) => {
     global: { headers: { Authorization: authHeader ?? "" } },
   });
   const { data: { user } } = await authClient.auth.getUser();
-  if (!user) return json(401, { error: "unauthorized" });
+  if (!user) return json(req,401, { error: "unauthorized" });
 
   // ③ 쿼터 체크(호출 前) — service_role 전용(클라는 ai_usage 못 건드림).
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   const today = utcToday();
   const used = await readUsage(admin, user.id, today);
   if (used >= AI_DAILY_QUOTA) {
-    return json(429, { error: "quota_exceeded" }); // Gemini 안 부름
+    return json(req,429, { error: "quota_exceeded" }); // Gemini 안 부름
   }
 
   // ④ body 파싱 + 마커 조립
@@ -129,7 +129,7 @@ Deno.serve(async (req: Request) => {
   try {
     body = await req.json();
   } catch {
-    return json(400, { error: "invalid_body" });
+    return json(req,400, { error: "invalid_body" });
   }
   const {
     bookInfo,
@@ -148,9 +148,9 @@ Deno.serve(async (req: Request) => {
   };
   // turn-1(history 빔)은 selected 필수, follow-up(history 있음)은 userRequest 필수.
   if (history.length === 0) {
-    if (!selected) return json(400, { error: "selected_required" });
+    if (!selected) return json(req,400, { error: "selected_required" });
   } else if (!userRequest) {
-    return json(400, { error: "user_request_required" });
+    return json(req,400, { error: "user_request_required" });
   }
 
   // turn-1: buildUserMessage가 마커 조립(서버 단일 출처). follow-up: 마커 재조립 생략,
@@ -167,7 +167,7 @@ Deno.serve(async (req: Request) => {
 
   // ⑤ Gemini 호출(재시도/타임아웃)
   const result = await callGemini(contents);
-  if (!result.ok) return json(502, { error: "ai_failed" });
+  if (!result.ok) return json(req,502, { error: "ai_failed" });
 
   // ⑥ JSON 형식 검증 — 깨지면 재시도 안 함 → 502.
   let parsed: unknown;
@@ -175,7 +175,7 @@ Deno.serve(async (req: Request) => {
     parsed = JSON.parse(result.text);
   } catch {
     console.error("gemini: invalid JSON", result.text.slice(0, 500));
-    return json(502, { error: "ai_failed" });
+    return json(req,502, { error: "ai_failed" });
   }
 
   // ⑦ 카운트 증가(성공 後만) — read-modify-write upsert. ±1 드리프트 허용(폭주 차단엔 무해).
@@ -194,5 +194,5 @@ Deno.serve(async (req: Request) => {
   }
 
   // ⑧ v3 JSON + userMessage echo 반환 (M6: 클라가 history 누적용으로 그대로 보관).
-  return json(200, { answer: parsed, userMessage });
+  return json(req,200, { answer: parsed, userMessage });
 });
