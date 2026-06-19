@@ -9,6 +9,7 @@ import { useReader } from './useReader'
 import { useReadingSession } from './useReadingSession'
 import { useTextSelection } from './useTextSelection'
 import { useConversation } from './useConversation'
+import { useSettings } from '../../stores/useSettings'
 import SelectionAskAI from './SelectionAskAI'
 import AIResponse from './AIResponse'
 import TocSheet from './TocSheet'
@@ -28,9 +29,12 @@ export default function EpubReader() {
   //   → startCfi가 확정된 1회 display로 복원(재init 레이스 방지).
   const { data: progress, isPending: progressPending } = useReadingProgress(bookId)
   const readerBook = book && !progressPending ? book : null
+  // 글자 크기(조각 B) — 클라 설정. useReader가 구독해 epub에 적용 + 변경 시 CFI 복원.
+  const fontSize = useSettings((s) => s.fontSize)
   const { status, rendition, prev, next } = useReader(viewerRef, readerBook, {
     onCenterTap: () => setShowControls((v) => !v),
     startCfi: progress?.progress_cfi,
+    fontSize,
   })
 
   // 진척 저장 + reading_sessions 수명주기(M6 #2). rendition 준비되면 배선.

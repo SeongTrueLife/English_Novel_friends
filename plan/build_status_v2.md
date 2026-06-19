@@ -79,7 +79,7 @@ epub 원서를 읽다 문장을 선택하면 AI가 **추론-우선 4축 JSON 풀
 3. **큐레이션 카탈로그 화면** — 사용자가 무료책을 둘러보고 서재에 추가하는 UI(현재 없음). 리더의 `curated_free` 읽기 경로는 이미 배선됨.
 4. **리더 UX 묶음** (3조각, 한 코딩 세션) — 설정 인프라를 깔고 리더 가독성 컨트롤 추가.
    - **조각 A ✅ 완료**(2026-06-19) — `useSettings` 스토어 + 공통 `ui/Sheet` + 리더 컨트롤(☰ 목차 · Aa 설정) + **TOC 챕터 점프**(`flattenToc` 중첩 평탄화 → `rendition.display(href)`) + 설정 시트 placeholder. 회귀 가드(시트 열림 시 화살표 쪽넘김 차단, AI 시트 포함). frontend_plan §6.2 일부 충족. *남은 검증: 중첩 TOC 실물(현 책 1단계뿐), persist는 조각 B에서 자연검증.*
-   - **조각 B** — 글자크기 조절: 설정 시트 `±` → `useSettings.fontSize` → `themes.fontSize` + **re-flow 후 CFI 위치 복원**(난이도 중, 플랜 모드 먼저).
+   - **조각 B ✅ 완료**(2026-06-19) — 설정 시트 `A−/A+`(14~28px·2px·경계 disabled) → `useSettings.fontSize` → useReader가 `themes.fontSize` 적용. **re-flow 후 CFI 복원** = 변경 직전 `currentLocation` 캡처 → `contents.once('resize')` ↔ `setTimeout(250)` 경합으로 1회 `display(cfi)`(epubjs 0.3.93 소스 검증). `themes.default`의 18px 제거해 override 단일출처화. *단일 변경 정상, 빠른 연타 드리프트는 알려진 이슈로 보류.*
    - **조각 C** — 다크모드: `tokens.css` 다크 세트 + `data-theme` 토글 + **epub iframe 테마 동기화**(앱셸/iframe 두 세계). 팔레트 값은 코딩 세션 플랜 제안 후 사용자 확정.
 5. **리더 진행 스크러버** — 하단 드래그로 위치 이동. locations 없이 **spine(섹션) 기반**으로. (4 다음, 중간 난이도). *컨트롤 누적 시 `ReaderControls` 래퍼 추출 재고(frontend_plan §6.2 line 230).*
 6. **추천 온보딩 퀴즈** — 설문 → 난이도·취향 맞춤 책 추천. *선행: books에 difficulty/genre(/embedding) 컬럼 보강.* (카탈로그·데이터 쌓인 뒤)
@@ -93,6 +93,7 @@ epub 원서를 읽다 문장을 선택하면 AI가 **추론-우선 4축 JSON 풀
 - **SE(standardebooks) epub**: 타이틀페이지 SVG를 epubjs가 과측정 → 빈 페이지. 리더 코어·다른 epub은 정상. (백로그 1)
 - **진행률(pct)**: spine 위치 기반 근사값(섹션 단위). 정확 % 필요 시 epubjs locations 견고화 별도 태스크.
 - **`useReadingSession` 세션 ref**: 현재 UI는 책 전환 시 리더가 언마운트돼 무해하나, 향후 reader→reader 직접 내비 추가 시 effect 시작에서 ref 리셋 필요(메모).
+- **글자크기 빠른 연타 시 위치 드리프트**(조각 B, 의도적 보류): A−/A+를 빠르게 연타하면(특히 줄일 때) 페이지가 튀다가 챕터 맨 앞으로 점프. 원인 = 첫 변경의 reflow 복원 전에 다음 변경 effect가 cleanup으로 리스너를 off하고, reflow 중 불안정 상태에서 `currentLocation()`을 캡처(챕터 시작 cfi 반환). **단일 변경은 정상**이라 보류. 해결법(필요 시): fontSize 변경을 디바운스해 입력이 멎은 뒤 마지막 값으로 1회만 적용+복원 → 경합 제거. (useReader 변경 effect 한 곳.)
 
 ---
 

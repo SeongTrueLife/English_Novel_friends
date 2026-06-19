@@ -1,10 +1,47 @@
-/* 설정 시트 (§6.2) — 조각 A는 자리만. 셸은 ui-sheet. 색은 tokens.css. */
+/* 설정 시트 (§6.2) — 셸은 ui-sheet. 색/모양은 tokens.css만. */
 
-.settings-sheet__placeholder {
-  margin: 0;
-  padding: 24px 8px;
+/* 한 설정 행: 라벨(좌) + 컨트롤(우) */
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.settings-row__label {
+  font: 15px var(--font-sans);
+  color: var(--text-primary);
+}
+
+/* A− / 값 / A+ 스테퍼 */
+.settings-stepper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.settings-stepper__btn {
+  min-width: 44px;
+  height: 38px;
+  padding: 0 10px;
+  font: 600 15px var(--font-sans);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.settings-stepper__btn:disabled {
+  color: var(--text-tertiary);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.settings-stepper__value {
+  min-width: 56px;
   text-align: center;
-  font-size: 14px;
-  line-height: 1.6;
+  font: 14px var(--font-sans);
   color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
 }
