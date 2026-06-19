@@ -43,7 +43,21 @@ export default function App() {
         <Route path="/vocab/study" element={<FlashcardStudy />} />
         <Route path="/stats" element={<StatsDashboard />} />
         <Route path="/stats/:bookId" element={<BookStats />} />
+        {/* M8-A에서 실제 가이드 페이지로 대체. 지금은 깨짐 방지용 자리. */}
+        <Route path="/guide" element={<GuideStub />} />
       </Route>
     </Routes>
+  )
+}
+
+// 가이드 스텁 — AccountSheet "가이드 다시 보기"의 착지점(다음 조각 M8-A에서 구현).
+function GuideStub() {
+  return (
+    <main className="screen">
+      <div className="state">
+        <h2 className="state__title">가이드</h2>
+        <p className="state__msg">곧 제공돼요.</p>
+      </div>
+    </main>
   )
 }

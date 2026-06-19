@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCards, useDeleteCard } from './useCards'
+import { useSession } from '../../stores/useSession'
+import { useAccountSheet } from '../../stores/useAccountSheet'
 import ThinkingCard from '../reader/ThinkingCard'
 import Markdown from '../reader/Markdown'
 import './VocabList.css'
@@ -105,6 +107,7 @@ export default function VocabList() {
         </div>
       </div>
       <VocabTabs tab={tab} onTab={onTab} />
+      {!selectMode && <LinkHint />}
       {body}
 
       {selectMode && (
@@ -128,6 +131,42 @@ export default function VocabList() {
         </div>
       )}
     </main>
+  )
+}
+
+// 소프트 힌트(§6.9) — 미연동일 때만, 닫기 가능(localStorage). 연동되면 자동 숨김.
+// 클릭 시 계정 시트를 연다(같은 시트를 AppShell 계정 아이콘도 연다 — useAccountSheet).
+const HINT_KEY = 'linkHintDismissed'
+
+function LinkHint() {
+  const isLinked = useSession((s) => !!s.user?.email)
+  const openSheet = useAccountSheet((s) => s.openSheet)
+  const [dismissed, setDismissed] = useState(
+    () => localStorage.getItem(HINT_KEY) === 'true',
+  )
+
+  if (isLinked || dismissed) return null
+
+  const dismiss = (e) => {
+    e.stopPropagation()
+    localStorage.setItem(HINT_KEY, 'true')
+    setDismissed(true)
+  }
+
+  return (
+    <div className="link-hint" role="button" tabIndex={0} onClick={openSheet}>
+      <span className="link-hint__text">
+        이메일 연동하면 다른 기기에서도 단어장을 써요 →
+      </span>
+      <button
+        type="button"
+        className="link-hint__close"
+        onClick={dismiss}
+        aria-label="힌트 닫기"
+      >
+        ✕
+      </button>
+    </div>
   )
 }
 

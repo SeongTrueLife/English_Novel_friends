@@ -1,0 +1,12 @@
+/* 앱 셸 — 탭바 끝 계정 아이콘. .tab-bar/.tab은 index.css 정의.
+   계정 탭은 동일 너비(flex:1) 대신 끝에 고정 폭으로 둔다. */
+.tab--account {
+  flex: 0 0 auto;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 14px 18px;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-secondary);
+}
