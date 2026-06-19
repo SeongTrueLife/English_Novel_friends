@@ -1,7 +1,7 @@
 // 화면 지도(라우트 정의) + 인증 부팅 배선.
 // arch ①: 6개 라우트 + '/' → '/library' redirect. AppShell을 레이아웃 라우트로 감싼다.
 import { useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 
 import { supabase, bootSession } from './lib/supabase'
 import { useSession } from './stores/useSession'
@@ -13,10 +13,12 @@ import VocabList from './features/vocab/VocabList'
 import FlashcardStudy from './features/vocab/FlashcardStudy'
 import StatsDashboard from './features/stats/StatsDashboard'
 import BookStats from './features/stats/BookStats'
+import GuidePage from './features/guide/GuidePage'
 
 export default function App() {
   const setSession = useSession((s) => s.setSession)
   const setError = useSession((s) => s.setError)
+  const navigate = useNavigate()
 
   useEffect(() => {
     // 1) 익명 부팅(세션 없으면 발급). 2) 이후 인증 변화를 store에 반영.
@@ -33,6 +35,13 @@ export default function App() {
     return () => sub.subscription.unsubscribe()
   }, [setSession, setError])
 
+  // 첫 실행 1회 자동 가이드 노출(§6.9). guideSeen이 없으면 부팅 직후 /guide로 유도.
+  // "시작하기"가 guideSeen을 켜므로 이후엔 안 뜬다. "가이드 다시 보기"는 이 플래그와 무관.
+  useEffect(() => {
+    if (!localStorage.getItem('guideSeen')) navigate('/guide', { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <Routes>
       <Route element={<AppShell />}>
@@ -43,21 +52,8 @@ export default function App() {
         <Route path="/vocab/study" element={<FlashcardStudy />} />
         <Route path="/stats" element={<StatsDashboard />} />
         <Route path="/stats/:bookId" element={<BookStats />} />
-        {/* M8-A에서 실제 가이드 페이지로 대체. 지금은 깨짐 방지용 자리. */}
-        <Route path="/guide" element={<GuideStub />} />
+        <Route path="/guide" element={<GuidePage />} />
       </Route>
     </Routes>
-  )
-}
-
-// 가이드 스텁 — AccountSheet "가이드 다시 보기"의 착지점(다음 조각 M8-A에서 구현).
-function GuideStub() {
-  return (
-    <main className="screen">
-      <div className="state">
-        <h2 className="state__title">가이드</h2>
-        <p className="state__msg">곧 제공돼요.</p>
-      </div>
-    </main>
   )
 }

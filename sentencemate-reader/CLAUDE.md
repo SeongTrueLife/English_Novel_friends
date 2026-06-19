@@ -46,11 +46,11 @@ M7 플래시카드+통계 → M8 가입유도+PWA(출시 직전).
 - 작은 프롬프트는 슬라이스 안에서 데이터→화면 순서로. 슬라이스 끝마다 dev 서버 실행 검증 + 커밋.
 
 ## 현재 마일스톤
-→ **M7 완료 = 이번 빌드 범위(M0~M7) 완료.** 핵심 루프 + follow-up + 이어읽기/세션 + 플래시카드 + 통계 + 챕터 배선·선택학습까지 동작.
-- 완료: M0~M5(핵심 루프) · M6(follow-up + 진척/세션) · M7(플래시카드 + 통계, +챕터 카드배선, +선택학습).
-- 다음: **M8**(가입유도 LinkAccountSheet[50개 마일스톤] + PWA[vite-plugin-pwa] + 보안 체크리스트), 그 후 SE epub 호환 수정 + Vercel 배포.
-- 진행률(pct)은 spine 위치 기반 근사값(useReadingSession) — 정확 % 필요 시 epubjs locations 견고화는 별도 태스크.
-- 배포된 Gemini 모델 id: `gemini-3-flash-preview` (index.ts `MODEL` 상수).
+→ **M8 진행 중 — account+guide 완료.** 이메일 연동(updateUser 단일 호출, Confirm ON, 계정 시트 + 단어장 힌트) + 가이드 페이지(/guide, 첫 실행 1회) 동작.
+- 완료: M0~M7(이번 빌드 범위) · M8 account/guide(이메일 연동 + 가이드).
+- **방향 변경(2026-06-19)**: 50개 자동 가입유도 팝업 제외 → 비강요(계정 아이콘 + 단어장 힌트 + /guide). 익명→이메일은 `updateUser({email,password})`(linkIdentity 아님), Confirm email ON.
+- 남은 M8/출시: **PWA(vite-plugin-pwa) → Vercel 배포 → CORS 프로덕션 도메인 + Redirect URLs + 보안 체크리스트 → SE epub 호환 수정**.
+- 진행률(pct)은 spine 위치 기반 근사값. Gemini 모델 id: `gemini-3-flash-preview`(index.ts `MODEL`).
 
 ## 알려진 이슈 (의도적 보류)
 - **SE(standardebooks) epub 빈 페이지** — epubjs가 SE의 SVG 타이틀페이지 폭을 과측정해 빈 페이지처럼 보임. **리더 코어·다른 epub은 정상**이고 데이터/아키텍처와 무관(useReader.js 렌더 설정 한 곳 문제). 별도 미니태스크로 수정 예정. 그전까지 **테스트는 SE 아닌 epub(Gutenberg 등)으로**.
