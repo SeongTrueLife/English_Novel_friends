@@ -2,7 +2,7 @@
 // SRS(간격계산·정답평가)는 범위 밖(frontend_arch ⑥ M7) — 이 화면은 그 복습 UI의 '그릇'까지만.
 // 데이터는 useCards(→services/cards)만 경유(불변규칙 2). 덱은 query 캐시에서 useMemo로 파생(규칙 3).
 import { useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useCards } from './useCards'
 import StudyScopeSheet from './StudyScopeSheet'
 import ThinkingCard from '../reader/ThinkingCard'
@@ -20,8 +20,15 @@ export default function FlashcardStudy() {
 
   const { data: cards, isPending, isError, refetch } = useCards(kind)
 
+  // 단어장 '선택 학습'으로 넘어오면 location.state.ids로 범위 시트를 건너뛰고 그 카드들만 덱 구성(§6.3).
+  const location = useLocation()
+
   // scope=null → 범위 선택 단계 / 객체 → 덱 단계. shuffleNonce++ 로 재셔플 트리거.
-  const [scope, setScope] = useState(null)
+  // ids로 진입했으면 'ids' 범위로 초기화(시트 스킵). useState 초기화는 1회만 — 이후 '범위 바꾸기'로 일반 흐름.
+  const [scope, setScope] = useState(() => {
+    const ids = location.state?.ids
+    return ids && ids.length ? { preset: 'ids', ids, shuffle: false } : null
+  })
   const [shuffleNonce, setShuffleNonce] = useState(0)
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
@@ -213,6 +220,9 @@ function buildDeck(cards, scope) {
   if (!cards || !scope) return []
   let list
   switch (scope.preset) {
+    case 'ids':
+      list = cards.filter((c) => scope.ids.includes(c.card_id)) // 단어장 선택 학습
+      break
     case 'chapter':
       list = cards.filter((c) => c.chapter === scope.chapter)
       break

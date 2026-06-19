@@ -18,6 +18,39 @@ export default function VocabList() {
   // 학습 모드로 현재 탭 kind 전달(§6.3↔6.4). 카드 없으면 비활성(빈 학습 진입 차단).
   const hasCards = rows && rows.length > 0
 
+  // 선택 모드(§6.3 다중 체크 → 선택 학습/삭제). selectedIds는 현재 탭 카드 한정.
+  const [selectMode, setSelectMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState(() => new Set())
+  const bulkDel = useDeleteCard()
+
+  const clearSelection = () => setSelectedIds(new Set())
+  const exitSelect = () => {
+    setSelectMode(false)
+    clearSelection()
+  }
+  // 탭 바꾸면 선택 초기화(kind 섞임 방지) — setTab을 감싼다.
+  const onTab = (t) => {
+    clearSelection()
+    setTab(t)
+  }
+  const toggleSelect = (id) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+
+  const selectedCount = selectedIds.size
+  const studySelected = () =>
+    navigate(`/vocab/study?kind=${tab}`, { state: { ids: [...selectedIds] } })
+  const deleteSelected = async () => {
+    const ids = [...selectedIds]
+    const results = await Promise.allSettled(ids.map((id) => bulkDel.mutateAsync(id)))
+    const failed = results.filter((r) => r.status === 'rejected').length
+    if (failed) console.error(`카드 삭제 ${failed}건 실패`)
+    exitSelect() // 무효화(useDeleteCard onSuccess)로 목록 자동 갱신
+  }
+
   let body
   if (isPending) {
     body = <ListSkeleton />
@@ -33,27 +66,67 @@ export default function VocabList() {
           <span className="vocab-group__count">{g.rows.length}</span>
         </header>
         {g.rows.map((row) => (
-          <CardRow key={row.card_id} row={row} tab={tab} />
+          <CardRow
+            key={row.card_id}
+            row={row}
+            tab={tab}
+            selectMode={selectMode}
+            selected={selectedIds.has(row.card_id)}
+            onToggleSelect={toggleSelect}
+          />
         ))}
       </section>
     ))
   }
 
   return (
-    <main className="screen vocab">
+    <main className={selectMode ? 'screen vocab vocab--selecting' : 'screen vocab'}>
       <div className="vocab__head">
         <h1 className="vocab__title">단어장</h1>
-        <button
-          type="button"
-          className="vocab__study-btn"
-          onClick={() => navigate(`/vocab/study?kind=${tab}`)}
-          disabled={!hasCards}
-        >
-          학습 시작
-        </button>
+        <div className="vocab__head-actions">
+          {!selectMode && (
+            <button
+              type="button"
+              className="vocab__study-btn"
+              onClick={() => navigate(`/vocab/study?kind=${tab}`)}
+              disabled={!hasCards}
+            >
+              학습 시작
+            </button>
+          )}
+          <button
+            type="button"
+            className="vocab__select-btn"
+            onClick={() => (selectMode ? exitSelect() : setSelectMode(true))}
+            disabled={!selectMode && !hasCards}
+          >
+            {selectMode ? '취소' : '선택'}
+          </button>
+        </div>
       </div>
-      <VocabTabs tab={tab} onTab={setTab} />
+      <VocabTabs tab={tab} onTab={onTab} />
       {body}
+
+      {selectMode && (
+        <div className="vocab-actionbar">
+          <button
+            type="button"
+            className="vocab-actionbar__btn"
+            onClick={studySelected}
+            disabled={selectedCount === 0}
+          >
+            {selectedCount}개 학습
+          </button>
+          <button
+            type="button"
+            className="vocab-actionbar__btn vocab-actionbar__btn--danger"
+            onClick={deleteSelected}
+            disabled={selectedCount === 0 || bulkDel.isPending}
+          >
+            {selectedCount}개 삭제
+          </button>
+        </div>
+      )}
     </main>
   )
 }
@@ -81,8 +154,8 @@ function VocabTabs({ tab, onTab }) {
   )
 }
 
-// 카드 한 줄 — 접힘(스캔)/펼침(원문 예문 + 상세) 로컬 토글 + 삭제(§6.3).
-function CardRow({ row, tab }) {
+// 카드 한 줄 — 접힘(스캔)/펼침(원문 예문 + 상세) 로컬 토글 + 삭제/선택(§6.3).
+function CardRow({ row, tab, selectMode, selected, onToggleSelect }) {
   const [expanded, setExpanded] = useState(false)
   const del = useDeleteCard()
   const isWord = tab === 'word'
@@ -93,6 +166,16 @@ function CardRow({ row, tab }) {
   return (
     <article className="card-row">
       <div className="card-row__main">
+        {selectMode && (
+          <input
+            type="checkbox"
+            className="card-row__check"
+            checked={selected}
+            onChange={() => onToggleSelect(row.card_id)}
+            aria-label="카드 선택"
+          />
+        )}
+
         <button
           type="button"
           className="card-row__toggle"
@@ -110,15 +193,17 @@ function CardRow({ row, tab }) {
 
         {row.chapter && <span className="card-row__chapter">{row.chapter}</span>}
 
-        <button
-          type="button"
-          className="card-row__delete"
-          onClick={() => del.mutate(row.card_id)}
-          disabled={del.isPending}
-          aria-label="카드 삭제"
-        >
-          ×
-        </button>
+        {!selectMode && (
+          <button
+            type="button"
+            className="card-row__delete"
+            onClick={() => del.mutate(row.card_id)}
+            disabled={del.isPending}
+            aria-label="카드 삭제"
+          >
+            ×
+          </button>
+        )}
       </div>
 
       {expanded && (
