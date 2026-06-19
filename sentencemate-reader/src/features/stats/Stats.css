@@ -1,0 +1,228 @@
+/* 통계 (§6.6/§6.7) — 대시보드 + 책별 상세.
+   전역 재사용: .screen / .state / .btn-accent / .skeleton / .progress / .progress__fill
+   (BookLibrary.css에서 앱 전역 로드 — VocabList/Flashcard와 동일 관행). */
+
+.stats__title {
+  margin: 0 0 16px;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 24px;
+  color: var(--text-primary);
+}
+
+/* ── KPI 행 ── */
+.kpi-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.kpi-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.kpi-card__value {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.kpi-card__label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ── 섹션 ── */
+.stats-section {
+  margin-top: 8px;
+}
+
+.stats-section__title {
+  margin: 0 0 10px;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ── 대시보드: 책별 진척 행 ── */
+.book-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.book-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'title counts'
+    'progress progress';
+  gap: 6px 10px;
+  align-items: center;
+  width: 100%;
+  padding: 14px 0;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.book-row__title {
+  grid-area: title;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.book-row__counts {
+  grid-area: counts;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.book-row__progress {
+  grid-area: progress;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.book-row__progress .progress {
+  flex: 1;
+}
+
+.book-row__pct {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  min-width: 34px;
+  text-align: right;
+}
+
+/* ── 보류 안내(정직 표기) ── */
+.stats-soon {
+  margin: 28px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+/* ── 책별 상세 ── */
+.stats-back {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.book-stats__head {
+  margin-bottom: 16px;
+}
+
+.book-stats__author {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.book-stats__bar {
+  display: block;
+  margin: -12px 0 12px;
+}
+
+.book-stats__last {
+  margin: 0 0 24px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.book-stats__empty {
+  max-width: none;
+}
+
+/* 챕터 행 */
+.chapter-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.chapter-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.chapter-row__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.chapter-row__sub {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.chapter-row__total {
+  flex: none;
+  min-width: 24px;
+  text-align: right;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 액션 */
+.book-stats__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.book-stats__study {
+  padding: 10px 18px;
+  font: 500 14px var(--font-sans);
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+/* ── 스켈레톤 ── */
+.kpi-skeleton {
+  flex: 1;
+  height: 76px;
+}
+
+.book-row-skeleton {
+  height: 56px;
+  margin-bottom: 10px;
+}
+
+.book-title-skeleton {
+  height: 28px;
+  width: 60%;
+  margin-bottom: 16px;
+}
+
+.chapter-row-skeleton {
+  height: 40px;
+  margin-bottom: 8px;
+}
