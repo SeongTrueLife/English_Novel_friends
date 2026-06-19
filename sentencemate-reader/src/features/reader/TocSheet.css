@@ -1,0 +1,45 @@
+/* 목차 시트 (§6.2). 셸은 ui-sheet, 여기엔 목록 전용 스타일만. 색/모양은 tokens.css. */
+
+.toc-sheet__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.toc-sheet__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  /* padding-left는 depth에 따라 인라인으로 — 여기선 세로/우측만. */
+  padding: 11px 8px 11px 12px;
+  border: none;
+  background: none;
+  font: 15px var(--font-serif);
+  line-height: 1.4;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.toc-sheet__list li + li .toc-sheet__item {
+  border-top: 1px solid var(--border);
+}
+
+.toc-sheet__item:hover {
+  background: var(--bg-secondary);
+}
+
+/* 현재 챕터 강조 */
+.toc-sheet__item--current {
+  color: var(--accent);
+  font-weight: 600;
+  background: var(--accent-soft-bg);
+}
+
+.toc-sheet__empty {
+  margin: 0;
+  padding: 24px 8px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+}

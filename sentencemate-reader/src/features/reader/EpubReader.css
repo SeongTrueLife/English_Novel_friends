@@ -60,10 +60,18 @@
   text-overflow: ellipsis;
 }
 
-/* 제목을 가운데 정렬하려고 '←' 폭만큼 우측 여백 확보. */
-.reader__topbar-spacer {
+/* 우측 액션(목차 ☰ · 설정 Aa) — 좌측 '←'와 같은 톤의 아이콘 버튼. */
+.reader__control {
   flex: none;
-  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  padding: 0 6px;
+  font-size: 18px;
+  line-height: 1;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
 }
 
 /* 로딩 — 뷰포트 위 가운데 안내. */

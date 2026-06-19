@@ -1,0 +1,10 @@
+/* 설정 시트 (§6.2) — 조각 A는 자리만. 셸은 ui-sheet. 색은 tokens.css. */
+
+.settings-sheet__placeholder {
+  margin: 0;
+  padding: 24px 8px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}

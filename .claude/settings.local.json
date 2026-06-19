@@ -6,7 +6,8 @@
       "Bash(npx vite:*)",
       "mcp__Claude_Preview__preview_start",
       "WebSearch",
-      "WebFetch(domain:docs.cloud.google.com)"
+      "WebFetch(domain:docs.cloud.google.com)",
+      "Bash(git -C sentencemate-reader diff -- src/features/reader/EpubReader.jsx src/features/reader/EpubReader.css)"
     ]
   }
 }

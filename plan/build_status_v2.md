@@ -65,6 +65,8 @@ epub 원서를 읽다 문장을 선택하면 AI가 **추론-우선 4축 JSON 풀
 - **진행률(pct) = spine 위치 기반 근사** — epubjs `locations.generate`가 깨진 섹션서 터지고 작은 책서 0 반환 → 제거하고 동기 spine 계산으로.
 - **세션 부활버그 회피** — visibility hidden=touch, pagehide/언마운트=end, startSession A+C 정리가 안전망. (db_schema 결정6 갱신)
 - **모델 id** `gemini-3-flash` → **`gemini-3-flash-preview`**(404 확인). (plan_v3 E)
+- **공통 바텀시트 = `components/ui/Sheet`(네임스페이스 `ui-sheet__*`)** — 기존 `.sheet*`는 `AddBookSheet.css`에 전역으로 정의돼 AccountSheet가 끌어쓰는 우발적 `reader→library` CSS 결합. 리더 시트는 새 프리미티브로 분리(기존 시트는 미마이그레이션, 범위 밖). (2026-06-19, 조각 A)
+- **클라 설정 단일 출처 = `stores/useSettings.js`(Zustand+persist, 키 `sm-settings`)** — `fontSize`(18)·`theme`('light'). 서버 데이터 아닌 순수 클라 설정이라 Zustand 적격. 그릇만 신설, 값 적용은 조각 B(글자크기)·C(다크모드). (2026-06-19, 조각 A)
 
 ---
 
@@ -75,8 +77,11 @@ epub 원서를 읽다 문장을 선택하면 AI가 **추론-우선 4축 JSON 풀
 1. **SE epub 렌더 수정** — SE 타이틀페이지 SVG 과측정 빈 페이지. ⚠️ **선행: SE 에디션 라이선스 조사**(상업/구독 사용 가능 여부, 표지·로고 별도 여부) — 사용자 조사 중.
 2. **큐레이션 무료책 인프라** — Storage `curated_books` 버킷 생성 + 시드 스크립트(`seeds/seed.js`, service_role) + epub 업로드. (1번 이후, SE 책 쓸 경우)
 3. **큐레이션 카탈로그 화면** — 사용자가 무료책을 둘러보고 서재에 추가하는 UI(현재 없음). 리더의 `curated_free` 읽기 경로는 이미 배선됨.
-4. **리더 챕터 점프(TOC 시트)** — `book.navigation.toc` → 챕터 탭하면 `rendition.display(href)` 점프. *쉬움·큰 효과*(앞쪽 다시보기 고통 해소). frontend_plan §6.2 미구현분.
-5. **리더 진행 스크러버** — 하단 드래그로 위치 이동. locations 없이 **spine(섹션) 기반**으로. (4 다음, 중간 난이도)
+4. **리더 UX 묶음** (3조각, 한 코딩 세션) — 설정 인프라를 깔고 리더 가독성 컨트롤 추가.
+   - **조각 A ✅ 완료**(2026-06-19) — `useSettings` 스토어 + 공통 `ui/Sheet` + 리더 컨트롤(☰ 목차 · Aa 설정) + **TOC 챕터 점프**(`flattenToc` 중첩 평탄화 → `rendition.display(href)`) + 설정 시트 placeholder. 회귀 가드(시트 열림 시 화살표 쪽넘김 차단, AI 시트 포함). frontend_plan §6.2 일부 충족. *남은 검증: 중첩 TOC 실물(현 책 1단계뿐), persist는 조각 B에서 자연검증.*
+   - **조각 B** — 글자크기 조절: 설정 시트 `±` → `useSettings.fontSize` → `themes.fontSize` + **re-flow 후 CFI 위치 복원**(난이도 중, 플랜 모드 먼저).
+   - **조각 C** — 다크모드: `tokens.css` 다크 세트 + `data-theme` 토글 + **epub iframe 테마 동기화**(앱셸/iframe 두 세계). 팔레트 값은 코딩 세션 플랜 제안 후 사용자 확정.
+5. **리더 진행 스크러버** — 하단 드래그로 위치 이동. locations 없이 **spine(섹션) 기반**으로. (4 다음, 중간 난이도). *컨트롤 누적 시 `ReaderControls` 래퍼 추출 재고(frontend_plan §6.2 line 230).*
 6. **추천 온보딩 퀴즈** — 설문 → 난이도·취향 맞춤 책 추천. *선행: books에 difficulty/genre(/embedding) 컬럼 보강.* (카탈로그·데이터 쌓인 뒤)
 7. **단어장 책→챕터→단어 접기** — 카드 많아질 때 계층 접기(문법도). 필수는 아님.
 8. **(기존 다음단계)** SRS 간격계산(SM-2)·복습 알림 / 세션 기반 통계(읽은시간·연속일) / 문장 컬렉션 UI(`sentences` 테이블 준비됨) / Google OAuth / 다크모드 토큰 적용 / 카드 삭제 confirm·undo.

@@ -11,6 +11,8 @@ import { useTextSelection } from './useTextSelection'
 import { useConversation } from './useConversation'
 import SelectionAskAI from './SelectionAskAI'
 import AIResponse from './AIResponse'
+import TocSheet from './TocSheet'
+import SettingsSheet from './SettingsSheet'
 import Toast from '../../components/ui/Toast'
 import './EpubReader.css'
 
@@ -19,6 +21,7 @@ export default function EpubReader() {
   const navigate = useNavigate()
   const viewerRef = useRef(null)
   const [showControls, setShowControls] = useState(false)
+  const [activeSheet, setActiveSheet] = useState(null) // null | 'toc' | 'settings'
 
   const { data: book, isPending, isError } = useBook(bookId)
   // 이어 읽기: progress 쿼리가 settle(data 또는 null)된 뒤에만 book을 넘겨 useReader를 init
@@ -64,15 +67,18 @@ export default function EpubReader() {
     conversation.reset()
   }
 
-  // 키보드 좌우 화살표 쪽넘김
+  // 키보드 좌우 화살표 쪽넘김.
+  // 오버레이(목차/설정 시트 또는 AI 풀이 시트)가 떠 있으면 무시 — 시트 뒤 책장이 넘어가는 누수 방지.
+  // 핸들러가 document 레벨이라 backdrop이 클릭은 막아도 키 입력은 못 막으므로 여기서 가드.
   useEffect(() => {
+    if (activeSheet != null || askedSentence != null) return
     const onKey = (e) => {
       if (e.key === 'ArrowRight') next()
       else if (e.key === 'ArrowLeft') prev()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [prev, next])
+  }, [prev, next, activeSheet, askedSentence])
 
   const goLibrary = () => navigate('/library')
 
@@ -104,7 +110,22 @@ export default function EpubReader() {
             ←
           </button>
           <span className="reader__title">{book?.title ?? ''}</span>
-          <span className="reader__topbar-spacer" aria-hidden="true" />
+          <button
+            type="button"
+            className="reader__control"
+            onClick={() => setActiveSheet('toc')}
+            aria-label="목차"
+          >
+            ☰
+          </button>
+          <button
+            type="button"
+            className="reader__control"
+            onClick={() => setActiveSheet('settings')}
+            aria-label="설정"
+          >
+            Aa
+          </button>
         </div>
       )}
 
@@ -128,6 +149,18 @@ export default function EpubReader() {
           onClose={closeSheet}
           onSaveError={() => setToast('저장 실패 · 다시')}
         />
+      )}
+
+      {activeSheet === 'toc' && (
+        <TocSheet
+          rendition={rendition}
+          currentChapter={getCurrentChapter()}
+          onClose={() => setActiveSheet(null)}
+        />
+      )}
+
+      {activeSheet === 'settings' && (
+        <SettingsSheet onClose={() => setActiveSheet(null)} />
       )}
 
       {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
