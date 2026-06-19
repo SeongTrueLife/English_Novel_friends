@@ -346,9 +346,9 @@ getUser() → user.id
 
 - [ ] **C(본인 키 옵션)** — MVP 후 필요 시 (`if(userKey)` 분기 + 설정 UI)
 - [ ] **Google OAuth** — 이메일 가입 안정화 후 linkIdentity provider 추가
-- [ ] **가입 유도 UX·안내 페이지** — 캐시 삭제 시 데이터 유실 경고 (프론트)
+- [x] ~~가입 유도 UX·안내 페이지~~ — **가이드 페이지(/guide) + 비강요 진입으로 구현**(2026-06-19). 자동 가입유도 팝업은 제외.
 - [ ] **profiles 테이블 + 인구통계** — 분석 필요 시
-- [ ] **touchSession 호출 시점** — 어떤 활동(페이지 넘김/카드 추가/스크롤)을 트리거로 (프론트, plan_v3 미정 항목)
+- [x] ~~touchSession 호출 시점~~ — **쪽넘김(relocated)으로 확정**(M6). visibility hidden=touch, pagehide/언마운트=end.
 - [ ] **쿼터 atomic 정확도** — 동시성 문제 실측되면 Postgres RPC로 교체
 - [ ] **쿼터 한도 튜닝** — 실사용 후 100 조정
 - [ ] **"남은 횟수" 표시** — 필요 시 ai_usage SELECT 정책 추가
@@ -357,4 +357,4 @@ getUser() → user.id
 
 ## 다음 작업
 
-plan_v3 "남은 설계 작업"의 **A 백엔드 완료** → 다음은 **B. 프론트엔드 아키텍처**(상태관리/TanStack Query, 라우팅, 폴더 구조). 백엔드 계약(이 문서)이 정해졌으니 프론트 데이터 흐름을 그릴 수 있다.
+이 백엔드 계약(키·인증·service layer·에러·CORS)은 **M0~M8 구현에 모두 적용·배포 완료(2026-06-19).** 구현 중 변경: linkIdentity→`updateUser`(②), Confirm email 켬, follow-up history echo, CORS 다중 origin(localhost+프로덕션). 현황·백로그 → [build_status_v2.md](build_status_v2.md).
