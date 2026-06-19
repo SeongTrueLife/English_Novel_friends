@@ -132,7 +132,7 @@
 
 .vocab-actionbar__btn--danger {
   background: var(--bg-secondary);
-  color: #b3261e;
+  color: var(--danger);
   border: 1px solid var(--border);
 }
 

@@ -77,14 +77,14 @@ epub 원서를 읽다 문장을 선택하면 AI가 **추론-우선 4축 JSON 풀
 1. **SE epub 렌더 수정** — SE 타이틀페이지 SVG 과측정 빈 페이지. ⚠️ **선행: SE 에디션 라이선스 조사**(상업/구독 사용 가능 여부, 표지·로고 별도 여부) — 사용자 조사 중.
 2. **큐레이션 무료책 인프라** — Storage `curated_books` 버킷 생성 + 시드 스크립트(`seeds/seed.js`, service_role) + epub 업로드. (1번 이후, SE 책 쓸 경우)
 3. **큐레이션 카탈로그 화면** — 사용자가 무료책을 둘러보고 서재에 추가하는 UI(현재 없음). 리더의 `curated_free` 읽기 경로는 이미 배선됨.
-4. **리더 UX 묶음** (3조각, 한 코딩 세션) — 설정 인프라를 깔고 리더 가독성 컨트롤 추가.
+4. **리더 UX 묶음 ✅ 완료**(2026-06-19, 3조각 한 코딩 세션) — 설정 인프라를 깔고 리더 가독성 컨트롤 추가.
    - **조각 A ✅ 완료**(2026-06-19) — `useSettings` 스토어 + 공통 `ui/Sheet` + 리더 컨트롤(☰ 목차 · Aa 설정) + **TOC 챕터 점프**(`flattenToc` 중첩 평탄화 → `rendition.display(href)`) + 설정 시트 placeholder. 회귀 가드(시트 열림 시 화살표 쪽넘김 차단, AI 시트 포함). frontend_plan §6.2 일부 충족. *남은 검증: 중첩 TOC 실물(현 책 1단계뿐), persist는 조각 B에서 자연검증.*
    - **조각 B ✅ 완료**(2026-06-19) — 설정 시트 `A−/A+`(14~28px·2px·경계 disabled) → `useSettings.fontSize` → useReader가 `themes.fontSize` 적용. **re-flow 후 CFI 복원** = 변경 직전 `currentLocation` 캡처 → `contents.once('resize')` ↔ `setTimeout(250)` 경합으로 1회 `display(cfi)`(epubjs 0.3.93 소스 검증). `themes.default`의 18px 제거해 override 단일출처화. *단일 변경 정상, 빠른 연타 드리프트는 알려진 이슈로 보류.*
-   - **조각 C** — 다크모드: `tokens.css` 다크 세트 + `data-theme` 토글 + **epub iframe 테마 동기화**(앱셸/iframe 두 세계). 팔레트 값은 코딩 세션 플랜 제안 후 사용자 확정.
+   - **조각 C ✅ 완료**(2026-06-19) — 다크모드: `tokens.css` `:root[data-theme=dark]` 15토큰(따뜻한 야간 팔레트) + `index.html` FOUC 스크립트 + `App.jsx` 단일 기록자(`useSettings.subscribe` 동기 갱신→iframe 색 읽기 레이스 차단) + useReader가 `getComputedStyle`로 토큰 실값 읽어 `themes.override`(hex 중복 0, 단일 출처). 색 변경은 reflow 없어 CFI 복원 불필요. SettingsSheet 라이트/다크 토글. 하드코딩 색 점검 → VocabList 삭제버튼만 `var(--danger)` 토큰화.
 5. **리더 진행 스크러버** — 하단 드래그로 위치 이동. locations 없이 **spine(섹션) 기반**으로. (4 다음, 중간 난이도). *컨트롤 누적 시 `ReaderControls` 래퍼 추출 재고(frontend_plan §6.2 line 230).*
 6. **추천 온보딩 퀴즈** — 설문 → 난이도·취향 맞춤 책 추천. *선행: books에 difficulty/genre(/embedding) 컬럼 보강.* (카탈로그·데이터 쌓인 뒤)
 7. **단어장 책→챕터→단어 접기** — 카드 많아질 때 계층 접기(문법도). 필수는 아님.
-8. **(기존 다음단계)** SRS 간격계산(SM-2)·복습 알림 / 세션 기반 통계(읽은시간·연속일) / 문장 컬렉션 UI(`sentences` 테이블 준비됨) / Google OAuth / 다크모드 토큰 적용 / 카드 삭제 confirm·undo.
+8. **(기존 다음단계)** SRS 간격계산(SM-2)·복습 알림 / 세션 기반 통계(읽은시간·연속일) / 문장 컬렉션 UI(`sentences` 테이블 준비됨) / Google OAuth / 카드 삭제 confirm·undo. *(다크모드 토큰 적용은 백로그 4 조각 C로 완료.)*
 
 ---
 

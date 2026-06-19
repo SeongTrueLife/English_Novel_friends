@@ -1,7 +1,7 @@
 // 설정 시트 (§6.2) — "별도 설정 화면 없이 이 시트가 설정 진입구".
-// 조각 B: 글자 크기 컨트롤(A− / 현재값 / A+) → useSettings.fontSize/setFontSize 연결.
-//   적용·위치 유지(re-flow 후 CFI 복원)는 useReader가 fontSize를 구독해 처리(조각 B 설계 D1).
-// 테마(라이트·다크) 컨트롤은 다음 조각 C에서 이 시트에 추가.
+// 조각 B: 글자 크기 컨트롤(A− / 현재값 / A+) → useSettings.fontSize/setFontSize.
+// 조각 C: 테마(라이트/다크) 세그먼트 토글 → useSettings.theme/setTheme.
+//   적용은 useReader(본문)·App.jsx(앱셸 data-theme)가 store를 구독해 처리(설계 D1·D3).
 import Sheet from '../../components/ui/Sheet'
 import { useSettings } from '../../stores/useSettings'
 import './SettingsSheet.css'
@@ -11,9 +11,16 @@ const FONT_MIN = 14
 const FONT_MAX = 28
 const FONT_STEP = 2
 
+const THEMES = [
+  { value: 'light', label: '라이트' },
+  { value: 'dark', label: '다크' },
+]
+
 export default function SettingsSheet({ onClose }) {
   const fontSize = useSettings((s) => s.fontSize)
   const setFontSize = useSettings((s) => s.setFontSize)
+  const theme = useSettings((s) => s.theme)
+  const setTheme = useSettings((s) => s.setTheme)
 
   const dec = () => setFontSize(Math.max(FONT_MIN, fontSize - FONT_STEP))
   const inc = () => setFontSize(Math.min(FONT_MAX, fontSize + FONT_STEP))
@@ -44,6 +51,27 @@ export default function SettingsSheet({ onClose }) {
           >
             A+
           </button>
+        </div>
+      </div>
+
+      <div className="settings-row">
+        <span className="settings-row__label">테마</span>
+        <div className="settings-segment" role="group" aria-label="테마">
+          {THEMES.map((t) => (
+            <button
+              key={t.value}
+              type="button"
+              className={
+                theme === t.value
+                  ? 'settings-segment__btn settings-segment__btn--active'
+                  : 'settings-segment__btn'
+              }
+              onClick={() => setTheme(t.value)}
+              aria-pressed={theme === t.value}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
       </div>
     </Sheet>

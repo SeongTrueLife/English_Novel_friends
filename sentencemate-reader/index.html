@@ -11,6 +11,14 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="SentenceMate" />
     <title>SentenceMate Reader</title>
+    <!-- 다크모드 FOUC 방지(조각 C): mount 전 저장된 테마를 즉시 적용.
+         키/모양은 zustand persist(useSettings, key 'sm-settings', JSON .state.theme)와 일치시킬 것. -->
+    <script>
+      try {
+        var t = JSON.parse(localStorage.getItem('sm-settings')).state.theme
+        if (t) document.documentElement.dataset.theme = t
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

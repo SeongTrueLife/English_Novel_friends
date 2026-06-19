@@ -36,3 +36,34 @@
   --radius-md: 10px;
   --radius-lg: 16px;
 }
+
+/* 다크모드(야간 독서) — 라이트와 같은 구조, 값만 교체(조각 C).
+   순흑 배경 금지: 따뜻한 갈회색 톤으로 눈부심/과대비를 피한 "야간 서재".
+   토글은 App.jsx가 html[data-theme="dark"]를 세팅 → 아래 변수가 :root를 덮는다.
+   epub iframe 본문색(useReader)도 여기 --bg-primary/--text-primary를 getComputedStyle로 읽어 동기화. */
+:root[data-theme='dark'] {
+  /* 표면 (따뜻한 다크) */
+  --bg-page: #1a1714; /* 앱 바깥/스테이지 */
+  --bg-primary: #211d19; /* 카드·본문 표면 */
+  --bg-secondary: #2a2521; /* 패널·인셋·칩 */
+
+  /* 텍스트 (밝은 잉크) */
+  --text-primary: #ece6dd;
+  --text-secondary: #b3aaa0;
+  --text-tertiary: #847c72;
+
+  /* 악센트 (다크 대비 위해 한 단계 밝게) */
+  --accent: #4f9d8b;
+  --accent-soft-bg: #1e3531;
+  --accent-line: #5fae9b;
+
+  /* 시맨틱 */
+  --success: #5aa873;
+  --warning: #cba24e;
+  --warning-line: #7a6433;
+  --danger: #d9786a;
+
+  /* 경계 */
+  --border: #38322c;
+  --border-strong: #463f37;
+}

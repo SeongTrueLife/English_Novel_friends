@@ -7,6 +7,11 @@
   color-scheme: light;
 }
 
+/* 다크일 때 네이티브 위젯(스크롤바·폼 입력 등)도 다크로(조각 C). */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
 }

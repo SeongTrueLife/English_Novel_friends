@@ -13,7 +13,18 @@ import { getEpub } from '../../lib/indexeddb'
 //
 // 탭존(§6.2): rendition click의 "보이는 페이지" x좌표를 3등분 — 좌 prev / 우 next / 가운데 onCenterTap.
 // (paginated는 섹션 전체를 가로로 깔고 scrollLeft로 넘기므로, clientX에서 scrollLeft를 빼 페이지 기준으로 변환.)
-export function useReader(viewerRef, bookMeta, { onCenterTap, startCfi, fontSize } = {}) {
+// iframe 본문색 단일 출처(조각 C): tokens.css의 --bg-primary/--text-primary 실값을 읽어 그대로 쓴다.
+//   iframe엔 CSS 변수가 안 닿으므로 JS가 구체값을 줘야 하지만, getComputedStyle로 읽으면 hex 중복 없이
+//   tokens.css가 단일 출처가 된다. App.jsx가 setTheme 시 data-theme를 동기 갱신하므로 읽는 시점엔 새 테마 반영됨.
+function readReaderColors() {
+  const root = getComputedStyle(document.documentElement)
+  return {
+    color: root.getPropertyValue('--text-primary').trim() || '#2a2724',
+    background: root.getPropertyValue('--bg-primary').trim() || '#fcfaf6',
+  }
+}
+
+export function useReader(viewerRef, bookMeta, { onCenterTap, startCfi, fontSize, theme } = {}) {
   const [status, setStatus] = useState('loading')
   const [rendition, setRendition] = useState(null) // 선택 훅에 넘길 인스턴스(v1 방식)
   const bookRef = useRef(null)
@@ -32,6 +43,13 @@ export function useReader(viewerRef, bookMeta, { onCenterTap, startCfi, fontSize
     fontSizeRef.current = fontSize
   })
   const appliedFontSizeRef = useRef(null)
+
+  // 다크모드(조각 C) — init이 theme 변동으로 재실행되지 않게 ref로 캡처. appliedThemeRef = 현재 적용된 테마.
+  const themeRef = useRef(theme)
+  useEffect(() => {
+    themeRef.current = theme
+  })
+  const appliedThemeRef = useRef(null)
 
   // 복원 CFI도 ref로 캡처 — display는 init에서 1회만 읽고, startCfi 변동으로 책을 재로드하지 않게
   //   (EpubReader가 progress settle 후에만 book을 넘기므로 init 시점엔 이미 확정값).
@@ -85,13 +103,11 @@ export function useReader(viewerRef, bookMeta, { onCenterTap, startCfi, fontSize
         setRendition(rendition) // 선택 훅이 'selected' 구독하도록 노출
 
         // ③ 테마 — 세리프 + measure(~680px §4)는 body에서(v1 검증값). themes.default로 등록.
-        //    글자 크기는 default에 박지 않고 themes.fontSize(override)가 단일 출처(조각 B). 아래 ③' 참조.
+        //    글자 크기(조각 B)와 본문색(조각 C)은 default에 박지 않고 themes.override가 단일 출처. 아래 ③' 참조.
         rendition.themes.default({
           body: {
             'font-family': 'Georgia, "Noto Serif KR", serif',
             'line-height': '1.8',
-            color: '#2a2724',
-            background: '#fcfaf6',
             'max-width': '680px',
             margin: '0 auto',
             padding: '20px 32px',
@@ -99,13 +115,17 @@ export function useReader(viewerRef, bookMeta, { onCenterTap, startCfi, fontSize
           p: { 'margin-bottom': '1em' },
         })
 
-        // ③' 글자 크기 초기 적용 — display 이전에 override를 걸어 첫 페인트부터 올바른 크기로.
-        //     override는 content 훅에 등록돼 이후 챕터에도 자동 적용된다(epubjs themes). startCfi 복원도 이 크기에서 정확.
+        // ③' 글자 크기·본문색 초기 적용 — display 이전에 override를 걸어 첫 페인트부터 올바른 크기/테마로.
+        //     override는 content 훅에 등록돼 이후 챕터에도 자동 적용된다(epubjs themes). startCfi 복원도 이 상태에서 정확.
         const initialFontSize = fontSizeRef.current
         if (initialFontSize != null) {
           rendition.themes.fontSize(`${initialFontSize}px`)
           appliedFontSizeRef.current = initialFontSize
         }
+        const initColors = readReaderColors() // data-theme는 FOUC 스크립트가 mount 전 깔아 둠 → 정확
+        rendition.themes.override('color', initColors.color)
+        rendition.themes.override('background', initColors.background)
+        appliedThemeRef.current = themeRef.current
 
         // ④ paginated scrollLeft 보정(v1 이식) — 페이지 경계에서 어긋나면 delta 배수로 스냅.
         //    이 보정이 없으면 쪽넘김 후 반쪽/빈 페이지가 됨.
@@ -212,6 +232,20 @@ export function useReader(viewerRef, bookMeta, { onCenterTap, startCfi, fontSize
     // 표시 중인 contents가 없으면(이례적) 즉시 복원.
     rendition.display(cfi)
   }, [fontSize, status])
+
+  // 테마 변경(다크모드, 조각 C) — store theme가 바뀌면 iframe 본문색을 갱신.
+  // App.jsx가 data-theme를 동기 갱신한 뒤라 readReaderColors()는 새 테마 값을 읽는다.
+  // 색 변경은 reflow를 일으키지 않으므로(글자 크기와 달리) CFI 복원 불필요 — 보던 위치 그대로.
+  useEffect(() => {
+    const rendition = renditionRef.current
+    if (!rendition || status !== 'ready') return
+    if (appliedThemeRef.current === theme) return // 마운트 첫 실행(초기 적용분과 동일) skip
+
+    const { color, background } = readReaderColors()
+    rendition.themes.override('color', color)
+    rendition.themes.override('background', background)
+    appliedThemeRef.current = theme
+  }, [theme, status])
 
   const prev = useCallback(() => renditionRef.current?.prev(), [])
   const next = useCallback(() => renditionRef.current?.next(), [])
